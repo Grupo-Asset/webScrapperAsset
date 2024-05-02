@@ -1,0 +1,30 @@
+{
+  "name": "webscrapperasset",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node build/main.js",
+    "dev": "ts-node-dev src/main.ts",
+    "lint": "eslint .",
+    "tsc": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.12.8",
+    "standard": "17.1.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "dotenv": "16.4.5",
+    "express": "4.19.2"
+  },
+  "eslintConfig": {
+    "extends": "./node_modules/standar/eslintrc.json"
+  }
+}
