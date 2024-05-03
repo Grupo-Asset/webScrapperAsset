@@ -4,8 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "serve build -s -n -L -p $PORT",
-    "build": "node build/main.js",
+    "start": "node build/main.js",
     "dev": "ts-node-dev src/main.ts",
     "lint": "eslint .",
     "tsc": "tsc",
