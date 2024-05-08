@@ -8,7 +8,8 @@
     "dev": "ts-node-dev src/main.ts",
     "lint": "eslint .",
     "tsc": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "scrap": "ts-node-dev src/Models/argenprop.ts"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +23,8 @@
   },
   "dependencies": {
     "dotenv": "16.4.5",
-    "express": "4.19.2"
+    "express": "4.19.2",
+    "puppeteer": "^22.8.0"
   },
   "eslintConfig": {
     "extends": "./node_modules/standar/eslintrc.json"
