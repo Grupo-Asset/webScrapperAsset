@@ -15,19 +15,14 @@ let scrap = async (req: {propertyType:string, transactionType:string})=> {
     const rawElements = await page.evaluate(()=> {
         const products = Array.from(document.querySelectorAll('.listing__item'))
         return products.map((p: any)=> ({
-            link: p.querySelector('a').getAttribute('href')
-        })
-        
-        )
+                title: p.querySelector('.card__title').innerText? p.querySelector('.card__title--primary').innerText : "nothing",
+                price: p.querySelector('.card__price').innerText
+            })
+            
+            )     
     })
     console.log("raw",rawElements)
-    
-    
-    for(var i= 0 ; rawElements; i++){
-        await page.goto(`https://www.argenprop.com${rawElements[i].link}`)
-        await page.goBack()    
-    }
-    // await browser.close()
+    await browser.close()
 }catch(error) {
     console.log(error)
 }}
