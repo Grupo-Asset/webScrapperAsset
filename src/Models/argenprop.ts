@@ -32,8 +32,36 @@ let scrap = async (req: {propertyType:string, transactionType:string})=> {
         const moneda = await precioSelector?.evaluate(el => el.textContent?.replace(/[0-9 , \.]+/g,""))
         const m2Selector = await page.$('li[title="Superficie Total"] .strong')
         const m2 = await m2Selector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-
-        console.log("precio",precio? parseFloat(precio): 0,"Moneda",moneda,"titulo",titulo,"m2",m2?Number(m2):1)
+        const ubicaiconSelector = await page.$('li[title="Superficie Total"] .strong')
+        const ubicaicon = await ubicaiconSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        const adicionalSelector = await page.$('li[title="Superficie Total"] .strong')
+        const adicional = await adicionalSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        const descripcionSelector = await page.$('li[title="Superficie Total"] .strong')
+        const descripcion = await descripcionSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        const alternativoSelector = await page.$('li[title="Superficie Total"] .strong')
+        const alternativo = await alternativoSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        const urlSelector = await page.$('li[title="Superficie Total"] .strong')
+        const url = await urlSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        const serviciosSelector = await page.$('li[title="Superficie Total"] .strong')
+        const servicios = await serviciosSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        const fechaDePublicacionSelector = await page.$('li[title="Superficie Total"] .strong')
+        const fechaDePublicacion = await fechaDePublicacionSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        const publicadorSelector = await page.$('li[title="Superficie Total"] .strong')
+        const publicador = await publicadorSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
+        
+        console.log(
+            "precio",precio? parseFloat(precio): 0,
+            "Moneda",moneda,
+            "titulo",titulo,
+            "m2",m2?Number(m2):1,
+            "ubicacion",ubicaicon,
+            "adicional",adicional,
+            "descripcion",descripcion,
+            "alternativo",alternativo,
+            "url",url,
+            "servicios",servicios,
+            "fechaDePublicacion",fechaDePublicacion,
+            "publicador",publicador)
         await page.goBack()
         // let moneda = document.querySelector("all")?.getAttribute("href")
         // let m2 = document.querySelector("all")?.getAttribute("href")
