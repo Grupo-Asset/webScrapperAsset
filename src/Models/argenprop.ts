@@ -7,7 +7,7 @@ let scrap = async (req: {propertyType:string, transactionType:string})=> {
 
     try { 
     
-    let link = `https://www.argenprop.com/${propertyType}/${transactionType}`
+    let link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-40000-dolares`
     const browser = await puppeteer.launch({headless:false})
     const page = await browser.newPage()
     await page.goto(link)
@@ -21,7 +21,7 @@ let scrap = async (req: {propertyType:string, transactionType:string})=> {
         )
     })
     console.log("raw",rawElements)
-    
+    while(!await page.$("pagination__page-next pagination__page pagination__page--disable")){
     // const products :Array<Terreno> = []
     for(var i= 0 ; rawElements; i++){
         await page.goto(`https://www.argenprop.com${rawElements[i].link}`)
@@ -63,24 +63,17 @@ let scrap = async (req: {propertyType:string, transactionType:string})=> {
             "fechaDePublicacion",fechaDePublicacion,
             "publicador",publicador)
         await page.goBack()
-        // let moneda = document.querySelector("all")?.getAttribute("href")
-        // let m2 = document.querySelector("all")?.getAttribute("href")
-        // let ubicaicon = document.querySelector("all")?.getAttribute("href")
-        // let adicional =document.querySelector("all")?.getAttribute("href")
-        // let descripcion =document.querySelector("all")?.getAttribute("href")
-        // let alternativo = document.querySelector("all")?.getAttribute("href")
-        // let url =document.querySelector("all")?.getAttribute("href")
-        // let servicios =document.querySelector("all")?.getAttribute("href")
-        // let precioPorM2 = document.querySelector("all")?.getAttribute("href")
-        // let validacion = document.querySelector("all")?.getAttribute("href")
-        // let fechaDePublicacion = document.querySelector("all")?.getAttribute("href")
-        // let publicador = document.querySelector("all")?.getAttribute("href")
+ 
         // let terreno = new Terreno()
         // terreno.setTitulo(titulo? titulo : null)
         // products.push(
         // )
     }
-    // await browser.close()
+    await page.waitForSelector('.pagination__page-next');
+    await page.click(".pagination__page-next")
+    
+    }//while end
+    await browser.close()
 }catch(error) {
     console.log(error)
 }}
