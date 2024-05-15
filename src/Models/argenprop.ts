@@ -23,7 +23,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
         });
 
         console.log('raw', rawElements);
-
+        // commit
         for (const element of rawElements) {
             await page.goto(`https://www.argenprop.com${element.link}`);
 
