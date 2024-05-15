@@ -1,84 +1,70 @@
-import puppeteer from "puppeteer";
-// import { Terreno } from "./terreno";
+import puppeteer from 'puppeteer';
 
+interface ScrapeRequest {
+    propertyType: string;
+    transactionType: string;
+}
 
-let scrap = async (req: {propertyType:string, transactionType:string})=> {
-    let {propertyType,transactionType} = req
+export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
+    const { propertyType, transactionType } = req;
+    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-40000-dolares`;
 
-    try { 
-    
-    let link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-40000-dolares`
-    const browser = await puppeteer.launch({headless:false})
-    const page = await browser.newPage()
-    await page.goto(link)
-    await page.waitForSelector('.listing__items')
-    const rawElements = await page.evaluate(()=> {
-        const products = Array.from(document.querySelectorAll('.listing__item'))
-        return products.map((p: any)=> ({
-            link: p.querySelector('a').getAttribute('href')
-        })
-        
-        )
-    })
-    console.log("raw",rawElements)
-    while(!await page.$("pagination__page-next pagination__page pagination__page--disable")){
-    // const products :Array<Terreno> = []
-    for(var i= 0 ; rawElements; i++){
-        await page.goto(`https://www.argenprop.com${rawElements[i].link}`)
-        const titleSelector = await page.waitForSelector('.titlebar__address');
-        const titulo = await titleSelector?.evaluate(el => el.textContent);
-        const precioSelector = await page.waitForSelector(".titlebar__price-mobile p")
-        const precio = await precioSelector?.evaluate(el => el.textContent?.replace(/[A-Z , \.]+/g,""))
-        const moneda = await precioSelector?.evaluate(el => el.textContent?.replace(/[0-9 , \.]+/g,""))
-        const m2Selector = await page.$('li[title="Superficie Total"] .strong')
-        const m2 = await m2Selector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const ubicaiconSelector = await page.$('li[title="Superficie Total"] .strong')
-        const ubicaicon = await ubicaiconSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const adicionalSelector = await page.$('li[title="Superficie Total"] .strong')
-        const adicional = await adicionalSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const descripcionSelector = await page.$('li[title="Superficie Total"] .strong')
-        const descripcion = await descripcionSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const alternativoSelector = await page.$('li[title="Superficie Total"] .strong')
-        const alternativo = await alternativoSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const urlSelector = await page.$('li[title="Superficie Total"] .strong')
-        const url = await urlSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const serviciosSelector = await page.$('li[title="Superficie Total"] .strong')
-        const servicios = await serviciosSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const fechaDePublicacionSelector = await page.$('li[title="Superficie Total"] .strong')
-        const fechaDePublicacion = await fechaDePublicacionSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        const publicadorSelector = await page.$('li[title="Superficie Total"] .strong')
-        const publicador = await publicadorSelector?.evaluate(el => el.textContent?.replace(/\D/g,''))
-        
-        console.log(
-            "precio",precio? parseFloat(precio): 0,
-            "Moneda",moneda,
-            "titulo",titulo,
-            "m2",m2?Number(m2):1,
-            "ubicacion",ubicaicon,
-            "adicional",adicional,
-            "descripcion",descripcion,
-            "alternativo",alternativo,
-            "url",url,
-            "servicios",servicios,
-            "fechaDePublicacion",fechaDePublicacion,
-            "publicador",publicador)
-        await page.goBack()
- 
-        // let terreno = new Terreno()
-        // terreno.setTitulo(titulo? titulo : null)
-        // products.push(
-        // )
+    try {
+        const browser = await puppeteer.launch({ headless: false });
+        const page = await browser.newPage();
+        await page.goto(link);
+        await page.waitForSelector('.listing__items');
+
+        const rawElements = await page.evaluate(() => {
+            const products = Array.from(document.querySelectorAll('.listing__item'));
+            return products.map((p: any) => ({
+                link: p.querySelector('a').getAttribute('href'),
+            }));
+        });
+
+        console.log('raw', rawElements);
+
+        for (const element of rawElements) {
+            await page.goto(`https://www.argenprop.com${element.link}`);
+
+            const titulo = await page.$eval('.titlebar__address', el => el.textContent?.trim() || '');
+            const precioRaw = await page.$eval('.titlebar__price-mobile p', el => el.textContent?.trim() || '');
+            const precio = parseFloat(precioRaw.replace(/[A-Z , \.]+/g, ''));
+            const moneda = precioRaw.replace(/[0-9 , \.]+/g, '');
+
+            const m2 = await page.$eval('li[title="Superficie Total"] .strong', el => el.textContent?.replace(/\D/g, '')) || '0';
+            const ubicacion = await page.$eval('li[title="Ubicación"] .strong', el => el.textContent?.trim() || '');
+            const adicional = await page.$eval('li[title="Adicional"] .strong', el => el.textContent?.trim() || '');
+            const descripcion = await page.$eval('li[title="Descripción"] .strong', el => el.textContent?.trim() || '');
+            const alternativo = await page.$eval('li[title="Alternativo"] .strong', el => el.textContent?.trim() || '');
+            const url = await page.$eval('li[title="URL"] .strong', el => el.textContent?.trim() || '');
+            const servicios = await page.$eval('li[title="Servicios"] .strong', el => el.textContent?.trim() || '');
+            const fechaDePublicacion = await page.$eval('li[title="Fecha de Publicación"] .strong', el => el.textContent?.trim() || '');
+            const publicador = await page.$eval('li[title="Publicador"] .strong', el => el.textContent?.trim() || '');
+
+            console.log({
+                precio,
+                moneda,
+                titulo,
+                m2: Number(m2),
+                ubicacion,
+                adicional,
+                descripcion,
+                alternativo,
+                url,
+                servicios,
+                fechaDePublicacion,
+                publicador
+            });
+
+            await page.goBack();
+        }
+
+        await browser.close();
+    } catch (error) {
+        console.error('Error in scrapArgenprop:', error);
     }
-    await page.waitForSelector('.pagination__page-next');
-    await page.click(".pagination__page-next")
-    
-    }//while end
-    await browser.close()
-}catch(error) {
-    console.log(error)
-}}
+};
 
 
-scrap({propertyType:"terrenos",transactionType:"venta"})
-
-export {scrap}
+scrapArgenprop({ propertyType: 'terrenos', transactionType: 'venta' });
