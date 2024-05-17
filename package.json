@@ -10,7 +10,7 @@
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "scrap": "ts-node src/Service/landFinder/argenprop.ts",
-    "scrapComercial": "ts-node src/Service/landFinder/zonaprop.ts",
+    "scrapComercial": "ts-node src/Service/Comercial/zonaprop.ts",
     "scrapTest": "ts-node src/Service/scrapTest.ts"
   },
   "keywords": [],

@@ -3,6 +3,7 @@ class Comercio {
     private precio?              : number    | null = null;
     private moneda?              : string    | null = null;
     private m2?                  : number    | null = null;
+    private m2Cubiertos?         : number    | null = null;
     private ubicacion?           : string    | null = null;
     private adicional?           : string    | null = null;
     private descripcion?         : string    | null = null;
@@ -51,6 +52,10 @@ class Comercio {
 
     getM2() {
         return this.m2;
+    }
+    
+    getM2Cubiertos() {
+        return this.m2Cubiertos
     }
 
     getUbicacion() {
@@ -111,6 +116,10 @@ class Comercio {
 
     setM2(m2: number | null) {
         this.m2 = m2;
+    }
+
+    setM2Cubiertos(m2Cubiertos: number | null) {
+        this.m2Cubiertos = m2Cubiertos;
     }
 
     setUbicacion(ubicacion: string | null) {

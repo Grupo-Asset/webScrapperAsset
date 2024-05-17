@@ -4,6 +4,10 @@ interface ScrapeRequest {
     propertyType: string;
     transactionType: string;
 }
+const propertyTypeAdapter = (separator: string,wordSeparator:string, args:string[]): string => {
+    const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
+    return formattedArgs.join(separator);
+  }
 
 export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
     const { propertyType, transactionType } = req;
@@ -28,20 +32,37 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
             if (!element.link) continue;
             await page.goto(`https://www.zonaprop.com.ar${element.link}`);
             await new Promise(resolve => setTimeout(resolve, 5000));
-
-            const titulo = await page.$eval('.title-type-sup-property', el => el.textContent?.trim() || '');
+            const tituloElement = await page.$('.title-type-sup-property, .title-h1-development');
+            const titulo = tituloElement ? await page.evaluate(el => el.textContent?.trim(), tituloElement) : '';
             const precioRaw = await page.$eval('.price-value span span', el => el.textContent?.trim() || '');
             const precio = parseFloat(precioRaw.replace(/[A-Z ,\.]+/g, ''));
             const moneda = precioRaw.replace(/[0-9 ,\.]+/g, '');
 
-            const m2 = await page.$$eval('#section-icon-features-property li', elements => {
-                const li = elements.find(el => el.textContent?.includes('m²'));
+            const m2 : number= await page.$$eval('#section-icon-features-property li', elements => {
+                const li = elements.find(el => el.textContent?.includes('m² tot.'));
                 if (li) {
                     const match = li.textContent?.match(/\d+/g);
-                    return match ? match.join('') : '0';
+                    return match ? Number(match.join('')) : 0;
                 }
-                return '0';
+                return 0;
+            }); 
+
+            const m2Cubiertos: number = await page.$$eval('#section-icon-features-property li', elements => {
+                const li = elements.find(el => el.textContent?.includes('m² cub.') || el.textContent?.includes('m² cubiert') || el.textContent?.includes('m² cubierto') || el.textContent?.includes('m² cubierta') || el.textContent?.includes('m² cubiertos'));
+                if (li) {
+                    const text = li.textContent || '';
+                    const match = text.match(/[-+]?\b\d+\b/g); // Encuentra el primer número en el texto
+                    if (match) {
+                        const startIndex = text.indexOf(match[0]); // Empieza desde la posición del número encontrado
+                        const endIndex = startIndex + match[0].length; // Termina en la posición del final del número
+                        const numberString = text.substring(startIndex, endIndex).match(/[-+]?\b\d+\b/)?.[0] || '';
+                        return parseFloat(numberString); // Convertir la cadena a número
+                    }
+                }
+                return 0; 
             });
+            
+
             const ubicacion = await page.$eval('.section-location-property h4', el => el.textContent?.trim() || '');
             const descripcion = await page.$eval('#longDescription div', el => el.textContent?.trim() || '');
             const url = `https://www.zonaprop.com${element.link}`;
@@ -65,6 +86,7 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
                 "Moneda", moneda,
                 "titulo", titulo,
                 "m2", Number(m2) || 1,
+                "m2Cubiertos",m2Cubiertos,
                 "ubicacion", ubicacion,
                 "adicional", adicional,
                 "descripcion", descripcion,
@@ -85,5 +107,6 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
         }
     }
 };
+const propertyType = propertyTypeAdapter("-o-","-",["cocheras", "fondos de comercio", "galpones", "locales", "negocios especiales"])
 
-scrapZonaprop({ propertyType: 'terrenos', transactionType: 'venta' });
+scrapZonaprop({ propertyType: propertyType, transactionType: 'venta' });
