@@ -48,7 +48,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
                     let texto = el.textContent?.trim() || '';
                     texto = texto.replace(/\n/g, '');
                     texto = texto.replace(/\s*:/g, ':');
-                    texto = texto.replace(/\s+/g, ' '); // Eliminar espacios adicionales
+                    texto = texto.replace(/\s+/g, ' ');
                     return texto;
                 });
             });
