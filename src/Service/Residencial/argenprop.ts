@@ -11,7 +11,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
 
     let browser;
     try {
-        browser = await puppeteer.launch({ headless: true });
+        browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
         await page.goto(link);
         await page.waitForSelector('.listing__items');
@@ -34,19 +34,28 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             const precio = parseFloat(precioRaw.replace(/[A-Z ,\.]+/g, ''));
             const moneda = precioRaw.replace(/[0-9 ,\.]+/g, '');
             const ubicacion = await page.$eval('.titlebar__address', el => el.textContent?.trim() || '');
-            const caracteristicas = null
+            const servicios = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
+            const caracteristicas = await page.$$eval('#section-caracteristicas li p', elements => {
+                return elements.map(el => {
+                    let texto = el.textContent?.trim() || '';
+                    texto = texto.replace(/\n/g, '');
+                    texto = texto.replace(/\s*:/g, ':');
+                    texto = texto.replace(/\s+/g, ' ');
+                    return texto;
+                });
+            });
+
+
             const tipo_ambientes = null
             const instalaciones = null
-            const servicios = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
-            const caracteristicas_depto = null
-            const servicios_depto = null
-            const instalaciones_edificio = null
+            const caracteristicasDepto = null
+            const serviciosDepto = null
+            const instalacionesEdificio = null
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const m2 = await page.$eval('.desktop .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
             const dormitorio = null
-            const banos = null
+            // const banos = await page.$eval('li[title="Baños"] .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
             const ambientes = null
-            
             const url = `https://www.argenprop.com${element.link}`;
 
             const adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
@@ -68,7 +77,18 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
                 "url", url,
                 "servicios", servicios,
                 "fechaDePublicacion", fechaDePublicacion,
-                "publicador", publicador
+                "publicador", publicador,
+
+
+                "caracteristicas", caracteristicas,
+                "tipo_ambientes", tipo_ambientes,
+                "instalaciones", instalaciones,
+                "caracteristicasDepto", caracteristicasDepto,
+                "serviciosDepto", serviciosDepto,
+                "instalacionesEdificio", instalacionesEdificio,
+                "dormitorio", dormitorio,
+                // "banos", banos,
+                "ambientes", ambientes,
             );
 
             await page.goBack();
