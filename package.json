@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "scrap": "ts-node src/Models/zonaprop.ts",
+    "scrap": "ts-node src/Models/argenprop.ts",
     "scrapTest": "ts-node src/Service/scrapTest.ts"
   },
   "keywords": [],

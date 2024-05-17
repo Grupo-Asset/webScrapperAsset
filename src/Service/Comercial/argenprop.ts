@@ -41,9 +41,17 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             const ubicacion = await page.$eval('.titlebar__address', el => el.textContent?.trim() || '');
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const url = `https://www.argenprop.com${element.link}`;
-            const operacion = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
+            const operacion = await page.$eval('[property="name"]', el => el.textContent?.trim() || '');
 
-            const adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
+            const adicional = await page.$$eval('.property-features p', elements => {
+                return elements.map(el => {
+                    let texto = el.textContent?.trim() || '';
+                    texto = texto.replace(/\n/g, '');
+                    texto = texto.replace(/\s*:/g, ':');
+                    texto = texto.replace(/\s+/g, ' ');
+                    return texto;
+                });
+            });
             const fechaDePublicacion = null;
             const publicador = await page.$eval('.form-details-heading', el => el.textContent?.trim() || '');
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
