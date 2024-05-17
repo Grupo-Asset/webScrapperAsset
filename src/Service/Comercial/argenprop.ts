@@ -4,6 +4,10 @@ interface ScrapeRequest {
     propertyType: string;
     transactionType: string;
 }
+const propertyTypeAdapter = (separator: string,wordSeparator:string, args:string[]): string => {
+    const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
+    return formattedArgs.join(separator);
+  }
 
 export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
     const { propertyType, transactionType } = req;
@@ -11,9 +15,9 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
 
     let browser;
     try {
-        browser = await puppeteer.launch({ headless: true });
+        browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
-        await page.goto(link);
+        await page.goto(link);  
         await page.waitForSelector('.listing__items');
 
         const rawElements = await page.evaluate(() => {
@@ -28,17 +32,16 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
         for (const element of rawElements) {
             if (!element.link) continue;
             await page.goto(`https://www.argenprop.com${element.link}`);
-
+            
             const titulo = await page.$eval('.titlebar__address', el => el.textContent?.trim() || '');
             const precioRaw = await page.$eval('.titlebar__price-mobile p', el => el.textContent?.trim() || '');
             const precio = parseFloat(precioRaw.replace(/[A-Z ,\.]+/g, ''));
             const moneda = precioRaw.replace(/[0-9 ,\.]+/g, '');
-
             const m2 = await page.$eval('.desktop .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
             const ubicacion = await page.$eval('.titlebar__address', el => el.textContent?.trim() || '');
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const url = `https://www.argenprop.com${element.link}`;
-            const servicios = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
+            const operacion = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
 
             const adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
             const fechaDePublicacion = null;
@@ -57,7 +60,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
                 "descripcion", descripcion,
                 "alternativo", alternativo,
                 "url", url,
-                "servicios", servicios,
+                "operacion", operacion,
                 "fechaDePublicacion", fechaDePublicacion,
                 "publicador", publicador
             );
@@ -72,5 +75,5 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
         }
     }
 };
-
-scrapArgenprop({ propertyType: 'terrenos', transactionType: 'venta' });
+const propertyType = propertyTypeAdapter("-o-","-",["cocheras", "fondos de comercio", "galpones", "locales", "negocios especiales"])
+scrapArgenprop({ propertyType: propertyType, transactionType: 'venta' });
