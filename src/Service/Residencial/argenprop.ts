@@ -54,16 +54,18 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const m2 = await page.$eval('.desktop .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
             const dormitorio = null
-            // const banos = await page.$eval('li[title="Baños"] .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
+            const banos = await page.$eval('li[title="Baños"] .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
             const ambientes = null
             const url = `https://www.argenprop.com${element.link}`;
-
+            const m2Cubiertos = null
             const adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
             const fechaDePublicacion = null;
             const publicador = await page.$eval('.form-details-heading', el => el.textContent?.trim() || '');
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
                 return elements.map(el => el.textContent?.trim() || '');
             });
+            const cantPlantas = null
+            const orientacion = null 
 
             console.log(
                 "precio", precio.toString() || "0",
