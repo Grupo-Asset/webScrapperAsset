@@ -44,28 +44,77 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
                     return texto;
                 });
             });
-
-
-            const tipo_ambientes = null
-            const instalaciones = null
-            const caracteristicasDepto = null
-            const serviciosDepto = null
-            const instalacionesEdificio = null
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const m2 = await page.$eval('.desktop .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
-            const dormitorio = null
             const banos = await page.$eval('li[title="Baños"] .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
-            const ambientes = null
             const url = `https://www.argenprop.com${element.link}`;
-            const m2Cubiertos = null
             const adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
-            const fechaDePublicacion = null;
             const publicador = await page.$eval('.form-details-heading', el => el.textContent?.trim() || '');
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
                 return elements.map(el => el.textContent?.trim() || '');
             });
-            const cantPlantas = null
-            const orientacion = null 
+
+            // nuevo
+            const tipo_ambientes = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '');
+            const instalaciones = await page.$eval('#section-instalaciones-local .property-features-item', el => el.textContent?.trim() || '');
+            const serviciosDepto = await page.$eval('#section-servicios-depto .property-features-item', el => el.textContent?.trim() || '');
+            const instalacionesEdificio = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '');
+
+
+            const dormitorioPrimeraSeccion = await page.$eval('li[title="Dormitorios"] .strong', el => {
+                const text = el.textContent?.trim();
+                const match = text ? text.match(/\d+/) : null;
+                return match ? match[0] : null;
+            }).catch(() => null);
+            const dormitorioSegundaSeccion = await page.$$eval('#section-caracteristicas li', elements => {
+                for (const el of elements) {
+                  const text = el.textContent?.trim().toLowerCase();
+                  if (text && (text.includes('dormitorio') || text.includes('dormitorios'))) {
+                    const match = text.match(/\d+/);
+                    return match ? match[0] : null;
+                  }
+                }
+                return null;
+              }).catch(() => null);
+            const dormitorio = dormitorioPrimeraSeccion || dormitorioSegundaSeccion;
+
+            const ambientesPrimeraSeccion = await page.$eval('.desktop .strong', el => {
+                const text = el.textContent?.trim();
+                const match = text ? text.match(/\d+/) : null;
+                return match ? match[0] : null;
+            }).catch(() => null);
+            const ambientesSegundaSeccion = await page.$$eval('#section-caracteristicas li', elements => {
+                for (const el of elements) {
+                  const text = el.textContent?.trim().toLowerCase();
+                  if (text && (text.includes('ambiente') || text.includes('ambientes'))) {
+                    const match = text.match(/\d+/);
+                    return match ? match[0] : null;
+                  }
+                }
+                return null;
+              }).catch(() => null);
+            const ambientes = ambientesPrimeraSeccion || ambientesSegundaSeccion;
+
+            const m2PrimeraSeccion = await page.$eval('.desktop .strong', el => {
+                const text = el.textContent?.trim();
+                const match = text ? text.match(/\d+/) : null;
+                return match ? match[0] : null;
+            }).catch(() => null);
+            const m2SegundaSeccion = await page.$$eval('#section-caracteristicas li', elements => {
+                for (const el of elements) {
+                  const text = el.textContent?.trim().toLowerCase();
+                  if (text && (text.includes('cubierta'))) {
+                    const match = text.match(/\d+/);
+                    return match ? match[0] : null;
+                  }
+                }
+                return null;
+              }).catch(() => null);
+            const m2Cubiertos = m2PrimeraSeccion || m2SegundaSeccion;
+
+            const fechaDePublicacion = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '');
+            const cantPlantas = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '');
+            const orientacion = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || ''); 
 
             console.log(
                 "precio", precio.toString() || "0",
@@ -83,13 +132,15 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
 
 
                 "caracteristicas", caracteristicas,
+                "orientacion", orientacion,
+                "cantPlantas", cantPlantas,
+                "m2Cubiertos", m2Cubiertos,
                 "tipo_ambientes", tipo_ambientes,
                 "instalaciones", instalaciones,
-                "caracteristicasDepto", caracteristicasDepto,
                 "serviciosDepto", serviciosDepto,
                 "instalacionesEdificio", instalacionesEdificio,
                 "dormitorio", dormitorio,
-                // "banos", banos,
+                "banos", banos,
                 "ambientes", ambientes,
             );
 
