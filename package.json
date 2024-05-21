@@ -10,7 +10,7 @@
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "scrap": "ts-node src/Service/landFinder/argenprop.ts",
-    "scrapComercial": "ts-node src/Service/Comercial/zonaprop.ts",
+    "scrapComercial": "ts-node src/Service/Comercial/argenprop.ts",
     "scrapTest": "ts-node src/Service/scrapTest.ts"
   },
   "keywords": [],
@@ -24,7 +24,9 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
+    "axios": "^1.7.1",
     "dotenv": "16.4.5",
+    "exceljs": "^4.4.0",
     "express": "4.19.2",
     "puppeteer": "^22.8.0"
   },

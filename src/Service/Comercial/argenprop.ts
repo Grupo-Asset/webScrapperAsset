@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer';
-
+import { Exportation, MondayStrategy } from '../../Models/exportacionStrategy';
 interface ScrapeRequest {
     propertyType: string;
     transactionType: string;
@@ -11,7 +11,7 @@ const propertyTypeAdapter = (separator: string,wordSeparator:string, args:string
 
 export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
     const { propertyType, transactionType } = req;
-    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-40000-dolares`;
+    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-50000-dolares`;
 
     let browser;
     try {
@@ -28,7 +28,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
         });
 
         console.log('raw', rawElements);
-
+        let elements= []
         for (const element of rawElements) {
             if (!element.link) continue;
             await page.goto(`https://www.argenprop.com${element.link}`);
@@ -42,7 +42,9 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const url = `https://www.argenprop.com${element.link}`;
             const operacion = await page.$eval('[property="name"]', el => el.textContent?.trim() || '');
-
+            // const barrio
+            // const localidad
+            
             const adicional = await page.$$eval('.property-features p', elements => {
                 return elements.map(el => {
                     let texto = el.textContent?.trim() || '';
@@ -57,24 +59,40 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
                 return elements.map(el => el.textContent?.trim() || '');
             });
+            elements.push(
+                {"precio": precio.toString() || "0",
+            "Moneda": moneda,
+            "titulo": titulo,
+            "m2": Number(m2) || 1,
+            "ubicacion": ubicacion,
+            "adicional": adicional,
+            "descripcion": descripcion,
+            "alternativo": alternativo,
+            "url": url,
+            "operacion": operacion,
+            "fechaDePublicacion": fechaDePublicacion,
+            "publicador": publicador})
 
             console.log(
                 "precio", precio.toString() || "0",
                 "Moneda", moneda,
                 "titulo", titulo,
                 "m2", Number(m2) || 1,
-                "ubicacion", ubicacion,
-                "adicional", adicional,
-                "descripcion", descripcion,
-                "alternativo", alternativo,
-                "url", url,
-                "operacion", operacion,
-                "fechaDePublicacion", fechaDePublicacion,
-                "publicador", publicador
+                // "ubicacion", ubicacion,
+                // "adicional", adicional,
+                // "descripcion", descripcion,
+                // "alternativo", alternativo,
+                // "url", url,
+                // "operacion", operacion,
+                // "fechaDePublicacion", fechaDePublicacion,
+                // "publicador", publicador
             );
 
             await page.goBack();
         }
+        const exportation = new Exportation(elements);
+        const mondayExport = await exportation.export(new MondayStrategy(), { data: elements, templateBoardId :"6342801927"});
+        console.log("Monday exportado:", mondayExport);
     } catch (error) {
         console.error('Error in scrapArgenprop:', error);
     } finally {
