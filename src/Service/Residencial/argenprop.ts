@@ -1,4 +1,23 @@
 import puppeteer from 'puppeteer';
+// titulo:
+// ubicacion
+// descripcion
+// cant dormitorios
+// cant banos
+// cant ambientes
+// servicios
+// m2 totales
+// m2 m2Cubiertos
+// precio
+// moneda
+// transaccion
+// url
+// caracteristicas
+// alternativo
+// precio por m2 m2Cubiertos
+// precio por m2
+// validacion 
+
 
 interface ScrapeRequest {
     propertyType: string;
