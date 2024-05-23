@@ -1,21 +1,24 @@
 class Residencia {
-    private titulo?                : string    | null = null;
-    private precio?                : number    | null = null;
-    private moneda?                : string    | null = null;
-    private ubicacion?             : string    | null = null;
-    private caracteristicas?       : string    | null = null;
-    private tipo_ambientes?        : string    | null = null;
-    private instalaciones?         : string    | null = null;
-    private servicios?             : string    | null = null;
-    private caracteristicas_depto? : string    | null = null;
-    private servicios_depto?       : string    | null = null;
-    private instalaciones_edificio?: string    | null = null;
-    private descripcion?           : string    | null = null;
-    private m2?                    : number    | null = null;
-    private dormitorio?            : number    | null = null;
-    private banos?                 : number    | null = null;
-    private ambientes?             : number    | null = null;
-    private resumen?               : string    | null = null;
+    private titulo: string | null = null;
+    private precio: number | null = null;
+    private moneda: string | null = null;
+    private ubicacion: string | null = null;
+    private descripcion: string | null = null;
+    private cantDormitorios: number | null = null;
+    private cantBanos: number | null = null;
+    private cantAmbientes: number | null = null;
+    private cantPlantas: number | null = null;
+    private orientacion: string | null = null;
+    private servicios: string | null = null;
+    private m2Totales: number | null = null;
+    private m2Cubiertos: number | null = null;
+    private tipoAmbientes: string | null = null;
+    private transaccion: string | null = null;
+    private url: string | null = null;
+    private caracteristicas: string | null = null;
+    private instalaciones: string | null = null;
+    private publicador: string | null = null;
+    private fechaPublicacion: string | null = null;
 
     constructor() {}
 
@@ -36,56 +39,84 @@ class Residencia {
         return this.ubicacion;
     }
 
-    getCaracteristicas() {
-        return this.caracteristicas;
+    getDescripcion() {
+        return this.descripcion;
     }
 
-    getTipoAmbientes() {
-        return this.tipo_ambientes;
+    getCantDormitorios() {
+        return this.cantDormitorios;
     }
 
-    getInstalaciones() {
-        return this.instalaciones;
+    getCantBanos() {
+        return this.cantBanos;
+    }
+
+    getCantAmbientes() {
+        return this.cantAmbientes;
+    }
+
+    getCantPlantas() {
+        return this.cantPlantas;
+    }
+
+    getOrientacion() {
+        return this.orientacion;
     }
 
     getServicios() {
         return this.servicios;
     }
 
-    getCaracteristicasDepto() {
-        return this.caracteristicas_depto;
+    getM2Totales() {
+        return this.m2Totales;
     }
 
-    getServiciosDepto() {
-        return this.servicios_depto;
+    getM2Cubiertos() {
+        return this.m2Cubiertos;
     }
 
-    getInstalacionesEdificio() {
-        return this.instalaciones_edificio;
+    getTipoAmbientes() {
+        return this.tipoAmbientes;
     }
 
-    getDescripcion() {
-        return this.descripcion;
+    getTransaccion() {
+        return this.transaccion;
     }
 
-    getM2() {
-        return this.m2;
+    getUrl() {
+        return this.url;
     }
 
-    getDormitorio() {
-        return this.dormitorio;
+    getCaracteristicas() {
+        return this.caracteristicas;
     }
 
-    getBanos() {
-        return this.banos;
+    getInstalaciones() {
+        return this.instalaciones;
     }
 
-    getAmbientes() {
-        return this.ambientes;
+    getPublicador() {
+        return this.publicador;
     }
 
-    getResumen() {
-        return this.resumen;
+    getFechaPublicacion() {
+        return this.fechaPublicacion;
+    }
+
+    // Calculo de precio por metro cuadrado cubierto
+    getPrecioPorM2Cubiertos() {
+        if (this.precio && this.m2Cubiertos) {
+            return this.precio / this.m2Cubiertos;
+        }
+        return null;
+    }
+
+    // Calculo de precio por metro cuadrado total
+    getPrecioPorM2() {
+        if (this.precio && this.m2Totales) {
+            return this.precio / this.m2Totales;
+        }
+        return null;
     }
 
     // Setters
@@ -105,56 +136,68 @@ class Residencia {
         this.ubicacion = ubicacion;
     }
 
-    setCaracteristicas(caracteristicas: string | null) {
-        this.caracteristicas = caracteristicas;
+    setDescripcion(descripcion: string | null) {
+        this.descripcion = descripcion;
     }
 
-    setTipoAmbientes(tipo_ambientes: string | null) {
-        this.tipo_ambientes = tipo_ambientes;
+    setCantDormitorios(cantDormitorios: number | null) {
+        this.cantDormitorios = cantDormitorios;
     }
 
-    setInstalaciones(instalaciones: string | null) {
-        this.instalaciones = instalaciones;
+    setCantBanos(cantBanos: number | null) {
+        this.cantBanos = cantBanos;
+    }
+
+    setCantAmbientes(cantAmbientes: number | null) {
+        this.cantAmbientes = cantAmbientes;
+    }
+
+    setCantPlantas(cantPlantas: number | null) {
+        this.cantPlantas = cantPlantas;
+    }
+
+    setOrientacion(orientacion: string | null) {
+        this.orientacion = orientacion;
     }
 
     setServicios(servicios: string | null) {
         this.servicios = servicios;
     }
 
-    setCaracteristicasDepto(caracteristicas_depto: string | null) {
-        this.caracteristicas_depto = caracteristicas_depto;
+    setM2Totales(m2Totales: number | null) {
+        this.m2Totales = m2Totales;
     }
 
-    setServiciosDepto(servicios_depto: string | null) {
-        this.servicios_depto = servicios_depto;
+    setM2Cubiertos(m2Cubiertos: number | null) {
+        this.m2Cubiertos = m2Cubiertos;
     }
 
-    setInstalacionesEdificio(instalaciones_edificio: string | null) {
-        this.instalaciones_edificio = instalaciones_edificio;
+    setTipoAmbientes(tipoAmbientes: string | null) {
+        this.tipoAmbientes = tipoAmbientes;
     }
 
-    setDescripcion(descripcion: string | null) {
-        this.descripcion = descripcion;
+    setTransaccion(transaccion: string | null) {
+        this.transaccion = transaccion;
     }
 
-    setM2(m2: number | null) {
-        this.m2 = m2;
+    setUrl(url: string | null) {
+        this.url = url;
     }
 
-    setDormitorio(dormitorio: number | null) {
-        this.dormitorio = dormitorio;
+    setCaracteristicas(caracteristicas: string | null) {
+        this.caracteristicas = caracteristicas;
     }
 
-    setBanos(banos: number | null) {
-        this.banos = banos;
+    setInstalaciones(instalaciones: string | null) {
+        this.instalaciones = instalaciones;
     }
 
-    setAmbientes(ambientes: number | null) {
-        this.ambientes = ambientes;
+    setPublicador(publicador: string | null) {
+        this.publicador = publicador;
     }
 
-    setResumen(resumen: string | null) {
-        this.resumen = resumen;
+    setFechaPublicacion(fechaPublicacion: string | null) {
+        this.fechaPublicacion = fechaPublicacion;
     }
 }
 
