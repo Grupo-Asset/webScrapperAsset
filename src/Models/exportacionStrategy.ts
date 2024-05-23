@@ -1,6 +1,6 @@
 import axios from 'axios';
 import 'dotenv/config'
-
+import ExcelJS from 'exceljs';
 
 class Exportation {
     data: any;
@@ -28,10 +28,9 @@ class MondayStrategy implements IExportationStrategy {
             throw new Error("No data to export");
         }
 
-        // Clonar el tablero de la plantilla
+        
         const boardId = await this.cloneTemplateBoard(templateBoardId);
 
-        // Agregar items al nuevo tablero
         const results = await this.addItemsToBoard(boardId, data);
 
         return new Exportation(results);
@@ -135,4 +134,25 @@ class JsonStrategy implements IExportationStrategy {
         return new Exportation(jsonData);
     }
 }
-export {Exportation, MondayStrategy,JsonStrategy}
+
+class ExcelStrategy implements IExportationStrategy {
+    public async execute(params: object): Promise<Exportation> {
+        const data = params as any[];
+
+        // Crear libro de Excel y hoja de cálculo
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Sheet1');
+
+        // Añadir filas desde los datos
+        worksheet.columns = Object.keys(data[0]).map(key => ({ header: key, key }));
+        worksheet.addRows(data);
+
+        // Guardar el archivo Excel en un buffer
+        const excelBuffer = await workbook.xlsx.writeBuffer();
+
+        // Aquí puedes guardar el buffer en un archivo o devolverlo como necesites
+        // Por simplicidad, devolvemos el buffer envuelto en un Exportation
+        return new Exportation(excelBuffer);
+    }
+}
+export {Exportation, MondayStrategy,JsonStrategy, ExcelStrategy}
