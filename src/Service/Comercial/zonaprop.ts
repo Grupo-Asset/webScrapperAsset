@@ -51,15 +51,15 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
                 const li = elements.find(el => el.textContent?.includes('m² cub.') || el.textContent?.includes('m² cubiert') || el.textContent?.includes('m² cubierto') || el.textContent?.includes('m² cubierta') || el.textContent?.includes('m² cubiertos'));
                 if (li) {
                     const text = li.textContent || '';
-                    const match = text.match(/[-+]?\b\d+\b/g); // Encuentra el primer número en el texto
+                    const match = text.match(/[-+]?\b\d+\b/g);
                     if (match) {
-                        const startIndex = text.indexOf(match[0]); // Empieza desde la posición del número encontrado
-                        const endIndex = startIndex + match[0].length; // Termina en la posición del final del número
+                        const startIndex = text.indexOf(match[0]);
+                        const endIndex = startIndex + match[0].length;
                         const numberString = text.substring(startIndex, endIndex).match(/[-+]?\b\d+\b/)?.[0] || '';
-                        return parseFloat(numberString); // Convertir la cadena a número
+                        return parseFloat(numberString);
                     }
                 }
-                return 0; 
+                return 0;
             });
             
 
