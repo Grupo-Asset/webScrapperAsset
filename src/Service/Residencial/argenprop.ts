@@ -149,7 +149,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<Residencia[]> 
             residencia.setTransaccion(transactionType);
             residencia.setUrl(url);
             // residencia.setCaracteristicas(caracteristicas);
-            residencia.setInstalaciones(instalaciones);
+            // residencia.setInstalaciones(instalaciones);
             residencia.setPublicador(publicador);
 
             residencias.push(residencia);
