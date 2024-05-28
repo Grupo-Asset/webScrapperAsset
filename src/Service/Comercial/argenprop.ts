@@ -74,7 +74,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             "publicador": publicador})
 
             console.log(
-                "precio", precio.toString() || "0",
+                "Precio", precio.toString() || "0",
                 "Moneda", moneda,
                 "titulo", titulo,
                 "m2", Number(m2) || 1,
