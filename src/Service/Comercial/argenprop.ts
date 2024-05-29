@@ -11,11 +11,11 @@ const propertyTypeAdapter = (separator: string,wordSeparator:string, args:string
 
 export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
     const { propertyType, transactionType } = req;
-    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-50000-dolares`;
+    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa`;
 
     let browser;
     try {
-        browser = await puppeteer.launch({ headless: false });
+        browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);  
         await page.waitForSelector('.listing__items');

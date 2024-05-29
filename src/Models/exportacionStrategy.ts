@@ -24,18 +24,18 @@ interface Column {
     type: string;
 }
 
-interface ColumnIds {
-    Precio: string;
-    Moneda: string;
-    M2: string;
-    Ubicacion: string;
-    Adicional: string;
-    Descripcion: string;
-    Alternativo: string;
-    URL: string;
-    Operacion: string;
-    Publicador: string;
-}
+// interface ColumnIds {
+//     Precio: string;
+//     Moneda: string;
+//     M2: string;
+//     Ubicacion: string;
+//     Adicional: string;
+//     Descripcion: string;
+//     Alternativo: string;
+//     URL: string;
+//     Operacion: string;
+//     Publicador: string;
+// }
 
 class MondayStrategy implements IExportationStrategy {
     private readonly apiKey = process.env.MONDAY_API_KEY;
@@ -47,13 +47,13 @@ class MondayStrategy implements IExportationStrategy {
             throw new Error("No data to export");
         }
 
-        const { boardId, columnIds } = await this.cloneTemplateBoard(templateBoardId);
-        const results = await this.addItemsToBoard(boardId, data, columnIds);
+        const { boardId, columns } = await this.cloneTemplateBoard(templateBoardId);
+        const results = await this.addItemsToBoard(boardId, data, columns);
 
         return new Exportation(results);
     }
 
-    private async cloneTemplateBoard(templateBoardId: string): Promise<{ boardId: number, columnIds: ColumnIds }> {
+    private async cloneTemplateBoard(templateBoardId: string): Promise<{ boardId: number, columns: Column[] }> {
         const query = `
             mutation DuplicateBoard($boardId: ID!) { 
                 duplicate_board(board_id: $boardId, duplicate_type: duplicate_board_with_structure) { 
@@ -80,7 +80,7 @@ class MondayStrategy implements IExportationStrategy {
             });
 
             console.log('Response from Monday API:', response.data); // Debugging line
-
+            console.log("response data data", response.data.data.duplicate_board.board)
             if (response.data.errors) {
                 console.error('Errors from Monday API:', response.data.errors); // Debugging line
                 throw new Error(response.data.errors[0].message);
@@ -91,50 +91,32 @@ class MondayStrategy implements IExportationStrategy {
             }
 
             const board = response.data.data.duplicate_board.board;
-            const columns = board.columns.filter((col: Column) => col.type !== 'autonumber');
+            const columns : Column[] = board.columns
 
-            const columnIds: ColumnIds = {
-                Precio: this.getColumnId(columns, 'Precio'),
-                Moneda: this.getColumnId(columns, 'Moneda'),
-                M2: this.getColumnId(columns, 'M2'),
-                Ubicacion: this.getColumnId(columns, 'Ubicacion'),
-                Adicional: this.getColumnId(columns, 'Adicional'),
-                Descripcion: this.getColumnId(columns, 'Descripcion'),
-                Alternativo: this.getColumnId(columns, 'Alternativo'),
-                URL: this.getColumnId(columns, 'URL'),
-                Operacion: this.getColumnId(columns, 'Operacion'),
-                Publicador: this.getColumnId(columns, 'Publicador')
-            };
+            
 
-            return { boardId: board.id, columnIds };
+            return { boardId: board.id, columns: columns };
         } catch (error: any) {
             console.error('Error in cloneTemplateBoard:', error); // Debugging line
             throw new Error(`Error cloning template board: ${error.message}`);
         }
     }
 
-    private getColumnId(columns: Column[], title: string): string {
-        const column = columns.find(col => col.title === title);
-        if (!column) {
-            throw new Error(`Column with title '${title}' not found`);
-        }
-        return column.id;
-    }
 
-    private async addItemsToBoard(boardId: number, data: any[], columnIds: ColumnIds): Promise<any> {
+    private async addItemsToBoard(boardId: number, data: any[], columns: Column[]): Promise<any> {
         const batchSize = 50; // Define el tamaño del lote
         const results = [];
         console.log("llego al add items y este es el valor de data: ",data)
         for (let i = 0; i < data.length; i += batchSize) {
             const batch = data.slice(i, i + batchSize);
-            const batchResults = await this.sendBatchToMonday(boardId, batch, columnIds);
+            const batchResults = await this.sendBatchToMonday(boardId, batch, columns);
             results.push(...batchResults);
         }
 
         return results;
     }
 
-    private async sendBatchToMonday(boardId: number, batch: any[], columnIds: ColumnIds): Promise<any> {
+    private async sendBatchToMonday(boardId: number, batch: any[], columns: Column[]): Promise<any> {
         const query = `
             mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
                 create_item (board_id: $boardId, item_name: $itemName, column_values: $columnValues) {
@@ -147,21 +129,29 @@ class MondayStrategy implements IExportationStrategy {
 
         for (const item of batch) {
             const columnValues = {
-                [columnIds.Precio]: item.precio || "0",
-                [columnIds.Moneda]: item.moneda || "USD",
-                [columnIds.M2]: item.m2 || 1,
-                [columnIds.Ubicacion]: item.ubicacion || "",
-                [columnIds.Adicional]: item.adicional || "",
-                [columnIds.Descripcion]: item.descripcion || "",
-                [columnIds.Alternativo]: item.alternativo || "",
-                [columnIds.URL]: item.url || "",
-                [columnIds.Operacion]: item.operacion || "",
-                [columnIds.Publicador]: item.publicador || ""
+                [columns[0].id]: item.titulo || "?titulo",
+                [columns[2].id]: item.precio || "?precio",
+                [columns[3].id]: item.Moneda || "?moneda",
+                [columns[4].id]: item.m2,
+                [columns[6].id]: item.ubicacion || "?ubic",
+                [columns[10].id]: JSON.stringify(item.adicional) || "adicional?",
+                [columns[7].id]: item.descripcion || "desc?",
+                [columns[12].id]: JSON.stringify(item.alternativo) || "alt?",
+                [columns[8].id]: item.url || "url?",
+                [columns[9].id]: item.operacion || "oper?",
+                [columns[11].id]: item.publicador || "pub?"
             };
-
+            console.log("column values justo antes de mandarse", columnValues)
             const variables = {
                 boardId,
                 itemName: item.titulo || "test",
+                // columnValues: JSON.stringify({
+                //     [columns[0].id] : "esto es un column value",
+                //     [columns[2].id]: item.precio,
+                //     [columns[2].id]: item.moneda,
+                //     [columns[4].id]: "1234?",
+
+                // })
                 columnValues: JSON.stringify(columnValues)
             };
 
