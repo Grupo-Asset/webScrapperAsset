@@ -60,20 +60,25 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<Residencia[]> 
                 '#section-servicios-depto',
             ];
             let servicios: string | undefined;
-
-            for (const selector of serviceSelectors) {
-                servicios = await page.$eval(selector, el => {
-                    const items = Array.from(el.querySelectorAll('.property-features-item'));
-                    return items.map(item => item.textContent?.trim()).join(', ');
-                }).catch(() => undefined);
             
-                if (servicios) {
-                    break;
+            for (const selector of serviceSelectors) {
+                const exists = await page.$(selector);
+                if (exists) {
+                    servicios = await page.$eval(selector, el => {
+                        const items = Array.from(el.querySelectorAll('.property-features-item'));
+                        return items.map(item => item.textContent?.trim()).filter(Boolean).join(', ');
+                    }).catch((error) => {
+                        return undefined;
+                    });
+                    if (servicios && servicios.trim() !== '') {
+                        break;
+                    }
                 }
             }
-            if (typeof servicios === 'undefined') {
+            if (!servicios || servicios.trim() === '') {
                 servicios = 'No indica';
-            }
+            }          
+
 
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             let m2: number | null = null;
