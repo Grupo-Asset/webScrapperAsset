@@ -6,11 +6,12 @@
   "scripts": {
     "start": "node build/main.js",
     "dev": "ts-node-dev src/main.ts",
+    "build": "ts-node src/main.ts",
     "lint": "eslint .",
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "scrap": "ts-node src/Service/landFinder/meli.ts",
-    "scrapComercial": "ts-node src/Service/Comercial/zonaprop.ts",
+    "scrapComercial": "ts-node src/Service/Comercial/argenprop.ts",
     "scrapTest": "ts-node src/Service/scrapTest.ts"
   },
   "keywords": [],

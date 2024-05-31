@@ -1,45 +1,30 @@
-// import { Request, Response } from 'express';
-// import { scrapArgenprop } from './models/argenprop';
-// import { scrapZonaprop } from './models/zonaprop';
-// import { scrapMeli } from './models/meli';
-// import { scrapTerreno } from './models/terreno';
+import { Request, Response } from 'express';
+import ComercialController from "./comercial";
+import ResidencialController from "./residencial";
+import LandFinderController from "./landFinder";
 
-// export default class ScrapperController {
+
+export default class ScrapperController {
     
-//     static async modelAsigment(req: Request, res: Response): Promise<Response> {
-//         try {
-//             const { oferta } = req.body;
-//             if (oferta === 1) {
-//                 await ScrapperController.scrapOferta(req);
-//             } else {
-//                 await ScrapperController.scrapTerreno(req);
-//             }
-//             return res.status(200).json({ message: 'Scraping completed successfully' });
-//         } catch (error) {
-//             console.error('Error in modelAsigment:', error);
-//             return res.status(500).json({ error: 'Internal Server Error' });
-//         }
-//     }
+    static async modelAsigment(req: Request, res: Response): Promise<Response> {
+        try {
+            let resultado
+            const { tipo_de_busqueda } = req.body;
+            if (tipo_de_busqueda === "comercial") {
+                resultado = await ComercialController.scrap(req,res);
+            } else if(tipo_de_busqueda === "residencial"){
+                resultado = await ResidencialController.scrap(req,res);
+            }else if(tipo_de_busqueda === "land finder"){
+                resultado = await LandFinderController.scrap(req,res);
+                
+            }else{
+                return res.status(400).json({ error: 'el tipo de busqueda no existe', tipo_de_busqueda: ["comercial","residencial","land finder"] });
+            }
+            return resultado
+        } catch (error) {
+            console.error('Error in modelAsigment:', error);
+            return res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
 
-//     static async scrapOferta(req: Request): Promise<void> {
-//         try {
-//             await Promise.all([
-//                 scrapArgenprop(req),
-//                 scrapZonaprop(req),
-//                 scrapMeli(req)
-//             ]);
-//         } catch (error) {
-//             console.error('Error in scrapOferta:', error);
-//             throw error;
-//         }
-//     }
-
-//     static async scrapTerreno(req: Request): Promise<void> {
-//         try {
-//             await scrapTerreno(req);
-//         } catch (error) {
-//             console.error('Error in scrapTerreno:', error);
-//             throw error;
-//         }
-//     }
-// }
+}

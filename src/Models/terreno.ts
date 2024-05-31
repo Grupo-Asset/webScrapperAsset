@@ -1,21 +1,21 @@
 class Terreno {
-    private titulo?: string | null = null;
-    private precio?: number | null = null;
-    private moneda?: string | null = null;
-    private m2?: number | null = null;
-    private ubicacion?: string | null = null;
-    private adicional?: string | null = null;
-    private descripcion?: string | null = null;
-    private alternativo?: string | null = null;
-    private url?: string | null = null;
-    private servicioAgua?: boolean | null = null;
-    private servicioLuz?: boolean | null = null;
-    private servicioGas?: boolean | null = null;
-    private timeStamp?: Date | null = null;
-    private precioPorM2?: number | null = null;
-    private validacion?: boolean | null = null;
-    private fechaDePublicacion?: Date | null = null;
-    private publicador?: string | null = null;
+    private titulo?:                string      | null = "No indica";
+    private precio?:                number      | null = 0;
+    private moneda?:                string      | null = "No indica";
+    private m2?:                    number      | null = 0;
+    private ubicacion?:             string      | null = "No indica";
+    private adicional?:             string      | null = "No indica";
+    private descripcion?:           string      | null = "No indica";
+    private alternativo?:           string      | null = "No indica";
+    private url?:                   string      | null = "No indica";
+    private servicioAgua?:          boolean     | null = null;
+    private servicioLuz?:           boolean     | null = null;
+    private servicioGas?:           boolean     | null = null;
+    private timeStamp?:             Date        | null = null;
+    private precioPorM2?:           number      | null = 0;
+    private validacion?:            boolean     | null = null;
+    private fechaDePublicacion?:    Date        | null = null;
+    private publicador?:            string      | null = null;
 
     // Getters y setters...
 
