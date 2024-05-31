@@ -88,5 +88,5 @@ export const scrapMercadoLibre = async (): Promise<Comercio[]> => {
 };
 
 scrapMercadoLibre().then(comercios => {
-    console.log('Comercios:', comercios);
+    console.log('Comercios:', comercios);
 });

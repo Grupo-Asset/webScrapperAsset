@@ -50,6 +50,49 @@ export const scrapMercadoLibre = async (): Promise<Terreno[]> => {
                 return 0;
             });
 
+            const fechaDePublicacionTimestamp = await page.$eval('.ui-pdp-header .ui-pdp-header__bottom-subtitle', el => {
+                const text = el.textContent?.trim() || '';
+                const numberMatch = text.match(/\d+/);
+                const unidadMatch = text.match(/días|meses|año|años/);
+
+                if (!numberMatch || !unidadMatch) {
+                    return new Date().getTime();
+                }
+
+                const number = parseInt(numberMatch[0], 10);
+                const unidad = unidadMatch[0];
+                const fechaActual = new Date().getTime();
+
+                let fechaPublicacion;
+                switch (unidad) {
+                    case 'días':
+                        fechaPublicacion = fechaActual - (number * 24 * 60 * 60 * 1000);
+                        break;
+                    case 'meses':
+                        // Restar el número de meses a la fecha actual
+                        const fechaMeses = new Date();
+                        fechaMeses.setMonth(fechaMeses.getMonth() - number);
+                        fechaPublicacion = fechaMeses.getTime();
+                        break;
+                    case 'año':
+                    case 'años':
+                        // Restar el número de años a la fecha actual
+                        const fechaAños = new Date();
+                        fechaAños.setFullYear(fechaAños.getFullYear() - number);
+                        fechaPublicacion = fechaAños.getTime();
+                        break;
+                    default:
+                        // Si no se reconoce la unidad, devolver la fecha actual
+                        fechaPublicacion = fechaActual;
+                        break;
+                }
+            
+                return fechaPublicacion;
+            });
+            
+            // const fechaDePublicacion = new Date(fechaDePublicacionTimestamp);
+            
+
             // Establece todas las propiedades del terreno
             terreno.setTitulo(titulo);
             terreno.setPrecio(precio);
@@ -58,6 +101,7 @@ export const scrapMercadoLibre = async (): Promise<Terreno[]> => {
             terreno.setUbicacion(ubicacion);
             terreno.setDescripcion(descripcion);
             terreno.setUrl(element.link);
+            // terreno.setFechaDePublicacion(fechaDePublicacion);
 
             // Ajusta estas propiedades según sea necesario
             terreno.setPublicador('');
