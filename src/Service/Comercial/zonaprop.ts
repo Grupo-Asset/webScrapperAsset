@@ -26,6 +26,7 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
                 link: p.getAttribute('data-to-posting') || '',
             }));
         });
+
         console.log('raw', rawElements);
 
         for (const element of rawElements) {

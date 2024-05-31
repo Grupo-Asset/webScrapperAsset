@@ -1,26 +1,26 @@
 class Residencia {
-    private titulo: string | null = null;
-    private precio: number | null = null;
-    private moneda: string | null = null;
-    private ubicacion: string | null = null;
-    private descripcion: string | null = null;
-    private cantDormitorios: number | null = null;
-    private cantBanos: number | null = null;
-    private cantAmbientes: number | null = null;
-    private cantPlantas: number | null = null;
-    private orientacion: string | null = null;
-    private servicios: string | null = null;
-    private m2Totales: number | null = null;
-    private m2Cubiertos: number | null = null;
-    private tipoAmbientes: string | null = null;
-    private transaccion: string | null = null;
-    private url: string | null = null;
-    private caracteristicas: string | null = null;
-    private instalaciones: string | null = null;
-    private publicador: string | null = null;
-    private fechaPublicacion: string | null = null;
-    private serviciosDepto: string | null = null;
-    private instalacionesEdificio: string | null = null;
+    private titulo:                     string | null = "No indica";
+    private precio:                     number | null = 0;
+    private moneda:                     string | null = "No indica";
+    private ubicacion:                  string | null = "No indica";
+    private descripcion:                string | null = "No indica";
+    private cantDormitorios:            number | null = 0;
+    private cantBanos:                  number | null = 0;
+    private cantAmbientes:              number | null = 0;
+    private cantPlantas:                number | null = 0;
+    private orientacion:                string | null = "No indica";
+    private servicios:                  string | null = "No indica";
+    private m2Totales:                  number | null = 0;
+    private m2Cubiertos:                number | null = 0;
+    private tipoAmbientes:              string | null = "No indica";
+    private transaccion:                string | null = "No indica";
+    private url:                        string | null = "No indica";
+    private caracteristicas:            string | null = "No indica";
+    private instalaciones:              string | null = "No indica";
+    private publicador:                 string | null = "No indica";
+    private fechaPublicacion:           string | null = "No indica";
+    private serviciosDepto:             string | null = "No indica";
+    private instalacionesEdificio:      string | null = "No indica";
 
     constructor() {}
 

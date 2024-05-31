@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "scrap": "ts-node src/Service/landFinder/meli.ts",
+    "scrap": "ts-node src/Service/Residencial/argenprop.ts",
     "scrapComercial": "ts-node src/Service/Comercial/meli.ts",
     "scrapTest": "ts-node src/Service/scrapTest.ts"
   },

@@ -1,13 +1,15 @@
 import puppeteer from 'puppeteer';
 import { Exportation, MondayStrategy } from '../../Models/exportacionStrategy';
+
 interface ScrapeRequest {
     propertyType: string;
     transactionType: string;
 }
-const propertyTypeAdapter = (separator: string,wordSeparator:string, args:string[]): string => {
+
+const propertyTypeAdapter = (separator: string, wordSeparator: string, args: string[]): string => {
     const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
     return formattedArgs.join(separator);
-  }
+};
 
 export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
     const { propertyType, transactionType } = req;
@@ -28,23 +30,72 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
         });
 
         console.log('raw', rawElements);
-        let elements= []
+        let elements = [];
         for (const element of rawElements) {
             if (!element.link) continue;
             await page.goto(`https://www.argenprop.com${element.link}`);
             
             const titulo = await page.$eval('.titlebar__address', el => el.textContent?.trim() || '');
             const precioRaw = await page.$eval('.titlebar__price-mobile p', el => el.textContent?.trim() || '');
-            const precio = parseFloat(precioRaw.replace(/[A-Z ,\.]+/g, ''));
-            const moneda = precioRaw.replace(/[0-9 ,\.]+/g, '');
-            const m2 = await page.$eval('.desktop .strong', el => el.textContent?.match(/\d+/g)?.join('') || '0');
+            let precio: number | null = 0;
+            let moneda = 'No indica';
+
+            if (precioRaw) {
+                const parsedPrecio = parseFloat(precioRaw.replace(/[A-Z ,\.]+/g, ''));
+                if (!isNaN(parsedPrecio)) {
+                    precio = parsedPrecio;
+                    moneda = precioRaw.replace(/[0-9 ,\.]+/g, '');
+                }
+            }
+
+            let m2: number | null = null;
+
+            // Buscar en li[title="Superficie Total"] .strong
+            m2 = await page.$eval('li[title="Superficie Total"] .strong', el => {
+                const text = el?.textContent?.trim();
+                const match = text ? text.match(/\d+/g) : null;
+                return match ? Number(match.join('')) : null;
+            }).catch(() => null);
+            
+            // Si no se encuentra en li[title="Superficie Total"] .strong, buscar en #section-superficie
+            if (m2 === null) {
+                m2 = await page.$eval('#section-superficie', el => {
+                    const items = el.querySelectorAll('li');
+                    for (const item of items) {
+                        const text = item.textContent?.trim() || '';
+                        if (text.includes('Sup. Terreno')) {
+                            const match = text.match(/\d+/g);
+                            return match ? Number(match.join('')) : null;
+                        }
+                    }
+                    return null;
+                }).catch(() => null);
+            }            
+            
+            // Si no se encuentra en #section-superficie, buscar en la descripción
+            if (m2 === null) {
+                const description = await page.$eval('.section-description--content', el => el.textContent?.trim() ?? '').catch(() => '');
+                const regex = /\b(\d+)\s*(metros|mts|metros\s+cuadrados|m²|m2)\b/gi;
+                const matches = description.matchAll(regex);
+                let extractedM2: number | null = null;
+                for (const match of matches) {
+                    const startIndex = match.index ? match.index - 10 : 0;
+                    const endIndex = match.index ? match.index + match[0].length + 10 : description.length;
+                    const context = description.substring(Math.max(0, startIndex), Math.min(description.length, endIndex));
+                    const numberContext = context.replace(/[^\d]/g, '');
+                    if (!isNaN(Number(numberContext)) && numberContext.length > 0) {
+                        extractedM2 = Number(numberContext);
+                        break;
+                    }
+                }
+                m2 = extractedM2;
+            }
+
             const ubicacion = await page.$eval('.titlebar__address', el => el.textContent?.trim() || '');
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const url = `https://www.argenprop.com${element.link}`;
             const operacion = await page.$eval('[property="name"]', el => el.textContent?.trim() || '');
-            // const barrio
-            // const localidad
-            
+
             const adicional = await page.$$eval('.property-features p', elements => {
                 return elements.map(el => {
                     let texto = el.textContent?.trim() || '';
@@ -59,35 +110,35 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
                 return elements.map(el => el.textContent?.trim() || '');
             });
-            elements.push(
-                {"precio": precio.toString() || "0",
-            "Moneda": moneda,
-            "titulo": titulo,
-            "m2": Number(m2) || 1,
-            "ubicacion": ubicacion,
-            "adicional": adicional,
-            "descripcion": descripcion,
-            "alternativo": alternativo,
-            "url": url,
-            "operacion": operacion,
-            "fechaDePublicacion": fechaDePublicacion,
-            "publicador": publicador})
+            elements.push({
+                "precio": precio.toString() || "0",
+                "Moneda": moneda,
+                "titulo": titulo,
+                "m2": Number(m2) || 0,
+                "ubicacion": ubicacion,
+                "adicional": adicional,
+                "descripcion": descripcion,
+                "alternativo": alternativo,
+                "url": url,
+                "operacion": operacion,
+                "fechaDePublicacion": fechaDePublicacion,
+                "publicador": publicador
+            });
 
             console.log(
                 "precio", precio.toString() || "0",
                 "Moneda", moneda,
                 "titulo", titulo,
-                "m2", Number(m2) || 1,
-                // "ubicacion", ubicacion,
-                // "adicional", adicional,
-                // "descripcion", descripcion,
-                // "alternativo", alternativo,
-                // "url", url,
-                // "operacion", operacion,
-                // "fechaDePublicacion", fechaDePublicacion,
-                // "publicador", publicador
+                "m2", Number(m2) || 0,
+                "ubicacion", ubicacion,
+                "adicional", adicional,
+                "descripcion", descripcion,
+                "alternativo", alternativo,
+                "url", url,
+                "operacion", operacion,
+                "fechaDePublicacion", fechaDePublicacion,
+                "publicador", publicador
             );
-
             await page.goBack();
         }
         const exportation = new Exportation(elements);
@@ -97,9 +148,10 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
         console.error('Error in scrapArgenprop:', error);
     } finally {
         if (browser) {
-            await browser.close();
+            await browser.close();  
         }
     }
 };
+
 const propertyType = propertyTypeAdapter("-o-","-",["cocheras", "fondos de comercio", "galpones", "locales", "negocios especiales"])
 scrapArgenprop({ propertyType: propertyType, transactionType: 'venta' });

@@ -1,20 +1,20 @@
 class Comercio {
-    private titulo?              : string    | null = null;
-    private precio?              : number    | null = null;
-    private moneda?              : string    | null = null;
-    private m2?                  : number    | null = null;
-    private m2Cubiertos?         : number    | null = null;
-    private ubicacion?           : string    | null = null;
-    private adicional?           : string    | null = null;
-    private descripcion?         : string    | null = null;
-    private alternativo?         : string    | null = null;
-    private url?                 : string    | null = null;
-    private operacion?           : string    | null = null;
-    private timeStamp?           : Date      | null = null;
-    private precioPorM2?         : number    | null = null;
+    private titulo?              : string    | null = "No indica";
+    private precio?              : number    | null = 0;
+    private moneda?              : string    | null = "No indica";
+    private m2?                  : number    | null = 0;
+    private m2Cubiertos?         : number    | null = 0;
+    private ubicacion?           : string    | null = "No indica";
+    private adicional?           : string    | null = "No indica";
+    private descripcion?         : string    | null = "No indica";
+    private alternativo?         : string    | null = "No indica";
+    private url?                 : string    | null = "No indica";
+    private operacion?           : string    | null = "No indica";
+    private timeStamp?           : Date      | null = new Date("No indica");
+    private precioPorM2?         : number    | null = 0;
     private validacion?          : boolean   | null = null;
-    private fechaDePublicacion?  : Date      | null = null;
-    private publicador?          : string    | null = null;
+    private fechaDePublicacion?  : Date      | null = new Date("No indica");
+    private publicador?          : string    | null = "No indica";
 
     // constructor(titulo: string, precio: number, moneda: string, m2: number, ubicacion: string, adicional: string, descripcion: string, alternativo: string, url: string, servicios: { agua: boolean; luz: boolean; gas: boolean; }, timeStamp: Date, precioPorM2: number, validacion: boolean, fechaDePublicacion: Date, publicador: string) {
     //     this.titulo                 = titulo;
