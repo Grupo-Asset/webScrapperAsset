@@ -8,7 +8,7 @@ export const scrapArgenprop = async (req: Filters): Promise<void> => {
 
     let browser;
     try {
-        browser = await puppeteer.launch({ headless: true });
+        browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
         await page.goto(link);  
         await page.waitForSelector('.listing__items');

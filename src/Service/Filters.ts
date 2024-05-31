@@ -1,4 +1,5 @@
 export interface Filters{
+    tipo_de_busqueda: string,
     tipos_de_propiedad: string[],
     tipos_de_transaccion: string[],
     m2_minimos:number,
