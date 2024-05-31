@@ -28,7 +28,6 @@ export const scrapMercadoLibre = async (): Promise<Comercio[]> => {
 
             const titulo = await page.$eval('.ui-pdp-title', el => el.textContent?.trim() || '');
 
-
             const precioRaw = await page.$eval('.andes-money-amount__fraction', el => el.textContent?.trim() || '');
             const precio = parseFloat(precioRaw.replace(/[A-Z ,.]+/g, '').replace(',', '.'));
 
@@ -89,5 +88,5 @@ export const scrapMercadoLibre = async (): Promise<Comercio[]> => {
 };
 
 scrapMercadoLibre().then(comercios => {
-    console.log('Comercios:', comercios);
+    console.log('Comercios:', comercios);
 });

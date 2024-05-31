@@ -1,23 +1,14 @@
 import puppeteer from 'puppeteer';
 import { Exportation, MondayStrategy } from '../../Models/exportacionStrategy';
+import { Filters } from '../Filters';
 
-interface ScrapeRequest {
-    propertyType: string;
-    transactionType: string;
-}
-
-const propertyTypeAdapter = (separator: string, wordSeparator: string, args: string[]): string => {
-    const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
-    return formattedArgs.join(separator);
-};
-
-export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
-    const { propertyType, transactionType } = req;
-    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-50000-dolares`;
+export const scrapArgenprop = async (req: Filters): Promise<void> => {
+    const { tipos_de_propiedad, tipos_de_transaccion,lista_de_barrios, m2} = req;
+    const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
 
     let browser;
     try {
-        browser = await puppeteer.launch({ headless: false });
+        browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);  
         await page.waitForSelector('.listing__items');
@@ -126,7 +117,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             });
 
             console.log(
-                "precio", precio.toString() || "0",
+                "Precio", precio.toString() || "0",
                 "Moneda", moneda,
                 "titulo", titulo,
                 "m2", Number(m2) || 0,
@@ -141,6 +132,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             );
             await page.goBack();
         }
+        
         const exportation = new Exportation(elements);
         const mondayExport = await exportation.export(new MondayStrategy(), { data: elements, templateBoardId :"6342801927"});
         console.log("Monday exportado:", mondayExport);
@@ -153,5 +145,3 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
     }
 };
 
-const propertyType = propertyTypeAdapter("-o-","-",["cocheras", "fondos de comercio", "galpones", "locales", "negocios especiales"])
-scrapArgenprop({ propertyType: propertyType, transactionType: 'venta' });
