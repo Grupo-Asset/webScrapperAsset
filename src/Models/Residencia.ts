@@ -19,7 +19,6 @@ class Residencia {
     private instalaciones:              string | null = "No indica";
     private publicador:                 string | null = "No indica";
     private fechaPublicacion:           string | null = "No indica";
-    private serviciosDepto:             string | null = "No indica";
     private instalacionesEdificio:      string | null = "No indica";
 
     constructor() {}
@@ -121,10 +120,6 @@ class Residencia {
         return null;
     }
 
-    getserviciosDepto() {
-        return this.serviciosDepto;
-    }
-
     getinstalacionesEdificio() {
         return this.instalacionesEdificio;
     }
@@ -208,10 +203,6 @@ class Residencia {
 
     setFechaPublicacion(fechaPublicacion: string | null) {
         this.fechaPublicacion = fechaPublicacion;
-    }
-
-    setserviciosDepto(serviciosDepto: string | null) {
-        this.serviciosDepto = serviciosDepto;
     }
 
     setinstalacionesEdificio(instalacionesEdificio: string | null) {
