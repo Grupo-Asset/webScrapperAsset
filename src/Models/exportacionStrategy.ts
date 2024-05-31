@@ -18,37 +18,123 @@ interface IExportationStrategy {
     execute(params: { data: object[], templateBoardId: string }): Promise<Exportation>;
 }
 
+interface Column {
+    id: string;
+    title: string;
+    type: string;
+}
+
+interface ColumnIds {
+    Precio: string;
+    Moneda: string;
+    M2: string;
+    M2Cubiertos: string;
+    Ubicacion: string;
+    Adicional: string;
+    Descripcion: string;
+    Alternativo: string;
+    URL: string;
+    Operacion: string;
+    Publicador: string;
+}
+interface ResidencialColumnIds {
+    Titulo: string;
+    Descripcion: string;
+    Alternativo: string;
+    Adicional: string;
+    URL: string;
+    Ubicacion: string;
+    Localidad: string;
+    Barrio: string;
+    CantDormitorios: string;
+    TipoTransaccion: string;
+    Precio: string;
+    Moneda: string;
+    M2Cubiertos: string;
+    Caractersiticas: string;
+    CantPlantas: string;
+    CantAmbientes: string;
+    Cochera: string;
+    Orientacion: string;
+    Estado: string;
+}
+interface LandFinderColumnIds {
+    Descripcion: string;
+    Alternativo: string;
+    Adicional: string;
+    URL: string;
+    Ubicacion: string;
+    Localidad: string;
+    Barrio: string;
+    Titulo: string;
+    Precio: string;
+    Moneda: string;
+    M2: string;
+    PrecioPorM2: string;
+    Validacion: string;
+    Servicios: string;
+    Electrecidad: string;
+    Gas: string;
+    Agua: string;
+    Claca: string;
+}
+
 class MondayStrategy implements IExportationStrategy {
+    
     private readonly apiKey = process.env.MONDAY_API_KEY;
     private readonly url = 'https://api.monday.com/v2';
 
+
     public async execute(params: { data: object[], templateBoardId: string }): Promise<Exportation> {
+
         const { data, templateBoardId } = params;
+
         if (data.length === 0) {
             throw new Error("No data to export");
         }
 
-        
-        const boardId = await this.cloneTemplateBoard(templateBoardId);
+        let results;
 
-        const results = await this.addItemsToBoard(boardId, data);
+        if(templateBoardId==="6342801927"){//Comercial
+            const { boardId, columnIds } = await this.cloneTemplateBoard(templateBoardId);
+            results = await this.addItemsToBoard(boardId, data, columnIds);
+        }else if(templateBoardId==="6728241756"){//LandFinder
+            const { boardId, columnIds } = await this.cloneTemplateBoardLandFinder(templateBoardId);
+            results = await this.addItemsToBoardLandFinder(boardId, data, columnIds);
+        }else if(templateBoardId==="6728279849"){//Residencial
+            const { boardId, columnIds } = await this.cloneTemplateBoardResidencial(templateBoardId);
+            results = await this.addItemsToBoardResidencial(boardId, data, columnIds);
+        }else{
+            throw new Error("Template board ID not supported");
+        }
 
-        return new Exportation(results);
+    return new Exportation(results);
     }
 
-    private async cloneTemplateBoard(templateBoardId: string): Promise<number> {
+
+    private async cloneTemplateBoard(templateBoardId: string): Promise<{ boardId: number, columnIds: ColumnIds }> {
+
         const query = `
-            mutation {
-                duplicate_board (board_id: ${templateBoardId}, duplicate_type: duplicate_with_items) {
-                    board {
-                        id
-                    }
-                }
+            mutation DuplicateBoard($boardId: ID!) { 
+                duplicate_board(board_id: $boardId, duplicate_type: duplicate_board_with_structure) { 
+                    board { 
+                        id 
+                        columns {
+                            id
+                            title
+                            type
+                        }
+                    } 
+                } 
             }
         `;
 
+        const variables = { boardId: templateBoardId };
+        const requestBody = { query, variables };
+
         try {
-            const response = await axios.post(this.url, { query }, {
+            
+            const response = await axios.post(this.url, requestBody, {
                 headers: {
                     Authorization: this.apiKey,
                     'Content-Type': 'application/json'
@@ -66,68 +152,413 @@ class MondayStrategy implements IExportationStrategy {
                 throw new Error("Unexpected response structure");
             }
 
-            return response.data.data.duplicate_board.board.id;
-        } catch (error) {
+            const board = response.data.data.duplicate_board.board;
+            const columns = board.columns.filter((col: Column) => col.type !== 'autonumber');
+
+            const columnIds: ColumnIds = {
+                Precio: this.getColumnId(columns, 'texto5__1'),
+                Moneda: this.getColumnId(columns, 'moneda3__1'),
+                M2: this.getColumnId(columns, 'm23__1'),
+                M2Cubiertos: this.getColumnId(columns, 'm2_cubiertos__1'),
+                Ubicacion: this.getColumnId(columns, 'texto0__1'),
+                Adicional: this.getColumnId(columns, 'adicional__1'),
+                Descripcion: this.getColumnId(columns, 'descripcion__1'),
+                Alternativo: this.getColumnId(columns, 'alternativo__1'),
+                URL: this.getColumnId(columns, 'texto7__1'),
+                Operacion: this.getColumnId(columns, 'texto9__1'),
+                Publicador: this.getColumnId(columns, 'texto8__1')
+            };
+
+            return { boardId: board.id, columnIds };
+        } catch (error: any) {
             console.error('Error in cloneTemplateBoard:', error); // Debugging line
-            throw error;
+            throw new Error(`Error cloning template board: ${error.message}`);
         }
     }
+    private async cloneTemplateBoardResidencial(templateBoardId: string): Promise<{ boardId: number, columnIds: ResidencialColumnIds }> {
 
-    private async addItemsToBoard(boardId: number, data: any[]): Promise<any> {
-        const batchSize = 50; // Define el tamaño del lote
-        const results = [];
-
-        for (let i = 0; i < data.length; i += batchSize) {
-            const batch = data.slice(i, i + batchSize);
-            const batchResults = await this.sendBatchToMonday(boardId, batch);
-            results.push(...batchResults);
-        }
-
-        return results;
-    }
-
-    private async sendBatchToMonday(boardId: number, batch: any[]): Promise<any> {
         const query = `
-            mutation ($boardId: Int!, $items: [CreateItemInput!]!) {
-                create_items (board_id: $boardId, items: $items) {
-                    id
-                }
+            mutation DuplicateBoard($boardId: ID!) { 
+                duplicate_board(board_id: $boardId, duplicate_type: duplicate_board_with_structure) { 
+                    board { 
+                        id 
+                        columns {
+                            id
+                            title
+                            type
+                        }
+                    } 
+                } 
             }
         `;
 
-        const items = batch.map(item => ({
-            item_name: item.name,
-            column_values: JSON.stringify(item)
-        }));
-
-        const variables = {
-            boardId,
-            items
-        };
+        const variables = { boardId: templateBoardId };
+        const requestBody = { query, variables };
 
         try {
-            const response = await axios.post(this.url, { query, variables }, {
+            const response = await axios.post(this.url, requestBody, {
                 headers: {
                     Authorization: this.apiKey,
                     'Content-Type': 'application/json'
                 }
             });
 
-            console.log('Response from Monday API (add items):', response.data); // Debugging line
+            console.log('Response from Monday API:', response.data);
 
             if (response.data.errors) {
-                console.error('Errors from Monday API (add items):', response.data.errors); // Debugging line
+                console.error('Errors from Monday API:', response.data.errors);
                 throw new Error(response.data.errors[0].message);
             }
 
-            return response.data.data.create_items;
-        } catch (error) {
-            console.error('Error in sendBatchToMonday:', error); // Debugging line
-            throw error;
+            if (!response.data.data || !response.data.data.duplicate_board) {
+                throw new Error("Unexpected response structure");
+            }
+
+            const board = response.data.data.duplicate_board.board;
+            const columns = board.columns.filter((col: Column) => col.type !== 'autonumber');
+
+            const columnIds: ResidencialColumnIds = {
+                Titulo: this.getColumnId(columns, 'titulo__1'),
+                Descripcion: this.getColumnId(columns, 'descripcion__1'),
+                Alternativo: this.getColumnId(columns, 'alternativo__1'),
+                Adicional: this.getColumnId(columns, 'adicional__1'),
+                URL: this.getColumnId(columns, 'url__1'),
+                Ubicacion: this.getColumnId(columns, 'ubicacion__1'),
+                Localidad: this.getColumnId(columns, 'localidad__1'),
+                Barrio: this.getColumnId(columns, 'barrio__1'),
+                CantDormitorios: this.getColumnId(columns, 'cant_dormitorios__1'),
+                TipoTransaccion: this.getColumnId(columns, 'tipo_transaccion__1'),
+                Precio: this.getColumnId(columns, 'precio__1'),
+                Moneda: this.getColumnId(columns, 'moneda__1'),
+                M2Cubiertos: this.getColumnId(columns, 'm2_cubiertos__1'),
+                Caractersiticas: this.getColumnId(columns, 'caracteristicas__1'),
+                CantPlantas: this.getColumnId(columns, 'cant_plantas__1'),
+                CantAmbientes: this.getColumnId(columns, 'cant_ambientes__1'),
+                Cochera: this.getColumnId(columns, 'cochera__1'),
+                Orientacion: this.getColumnId(columns, 'orientacion__1'),
+                Estado: this.getColumnId(columns, 'estado__1')
+            };
+
+            return { boardId: board.id, columnIds };
+        } catch (error: any) {
+            console.error('Error in cloneTemplateBoard:', error);
+            throw new Error(`Error cloning template board: ${error.message}`);
         }
     }
-}
+    private async cloneTemplateBoardLandFinder(templateBoardId: string): Promise<{ boardId: number, columnIds: LandFinderColumnIds }> {
 
+        const query = `
+            mutation DuplicateBoard($boardId: ID!) { 
+                duplicate_board(board_id: $boardId, duplicate_type: duplicate_board_with_structure) { 
+                    board { 
+                        id 
+                        columns {
+                            id
+                            title
+                            type
+                        }
+                    } 
+                } 
+            }
+        `;
+
+        const variables = { boardId: templateBoardId };
+        const requestBody = { query, variables };
+
+        try {
+            const response = await axios.post(this.url, requestBody, {
+                headers: {
+                    Authorization: this.apiKey,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Response from Monday API:', response.data);
+
+            if (response.data.errors) {
+                console.error('Errors from Monday API:', response.data.errors);
+                throw new Error(response.data.errors[0].message);
+            }
+
+            if (!response.data.data || !response.data.data.duplicate_board) {
+                throw new Error("Unexpected response structure");
+            }
+
+            const board = response.data.data.duplicate_board.board;
+            const columns = board.columns.filter((col: Column) => col.type !== 'autonumber');
+
+            const columnIds: LandFinderColumnIds = {
+                Descripcion: this.getColumnId(columns, 'descripcion__1'),
+                Alternativo: this.getColumnId(columns, 'alternativo__1'),
+                Adicional: this.getColumnId(columns, 'adicional__1'),
+                URL: this.getColumnId(columns, 'url__1'),
+                Ubicacion: this.getColumnId(columns, 'ubicacion__1'),
+                Localidad: this.getColumnId(columns, 'localidad__1'),
+                Barrio: this.getColumnId(columns, 'barrio__1'),
+                Titulo: this.getColumnId(columns, 'titulo__1'),
+                Precio: this.getColumnId(columns, 'precio__1'),
+                Moneda: this.getColumnId(columns, 'moneda__1'),
+                M2: this.getColumnId(columns, 'm2__1'),
+                PrecioPorM2: this.getColumnId(columns, 'precio_por_m2__1'),
+                Validacion: this.getColumnId(columns, 'validacion__1'),
+                Servicios: this.getColumnId(columns, 'servicios__1'),
+                Electrecidad: this.getColumnId(columns, 'electrecidad__1'),
+                Gas: this.getColumnId(columns, 'gas__1'),
+                Agua: this.getColumnId(columns, 'agua__1'),
+                Claca: this.getColumnId(columns, 'claca__1')
+            };
+
+            return { boardId: board.id, columnIds };
+        } catch (error: any) {
+            console.error('Error in cloneTemplateBoard:', error);
+            throw new Error(`Error cloning template board: ${error.message}`);
+        }
+    }
+
+    private getColumnId(columns: Column[], id: string): string {
+        const column = columns.find(col => col.id === id);
+        if (!column) {
+            throw new Error(`Column with id '${id}' not found`);
+        }
+        return column.id;
+    }
+
+    private async addItemsToBoard(boardId: number, data: any[], columnIds: ColumnIds): Promise<any> {
+        const batchSize = 50; // Define el tamaño del lote
+        const results = [];
+        console.log("llego al add items y este es el valor de data: ",data)
+        for (let i = 0; i < data.length; i += batchSize) {
+            const batch = data.slice(i, i + batchSize);
+            const batchResults = await this.sendBatchToMonday(boardId, batch, columnIds);
+            results.push(...batchResults);
+        }
+
+        return results;
+    }
+
+    private async addItemsToBoardResidencial(boardId: number, data: any[], columnIds: ResidencialColumnIds): Promise<any> {
+        const batchSize = 50; // Define el tamaño del lote
+        const results = [];
+        console.log("llego al add items y este es el valor de data: ",data)
+        for (let i = 0; i < data.length; i += batchSize) {
+            const batch = data.slice(i, i + batchSize);
+            const batchResults = await this.sendBatchToMondayResidencial(boardId, batch, columnIds);
+            results.push(...batchResults);
+        }
+
+        return results;
+    }
+    private async addItemsToBoardLandFinder(boardId: number, data: any[], columnIds: LandFinderColumnIds): Promise<any> {
+        const batchSize = 50; // Define el tamaño del lote
+        const results = [];
+        console.log("llego al add items y este es el valor de data: ",data)
+        for (let i = 0; i < data.length; i += batchSize) {
+            const batch = data.slice(i, i + batchSize);
+            const batchResults = await this.sendBatchToMondayLandFinder(boardId, batch, columnIds);
+            results.push(...batchResults);
+        }
+
+        return results;
+    }
+
+    private async sendBatchToMonday(boardId: number, batch: any[], columnIds: ColumnIds): Promise<any> {
+        const query = `
+            mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
+                create_item (board_id: $boardId, item_name: $itemName, column_values: $columnValues) {
+                    id
+                }
+            }
+        `;
+
+        const results = [];
+
+        for (const item of batch) {
+            const columnValues = {
+                [columnIds.Precio]: item.precio || "?titulo",
+                [columnIds.Moneda]: item.moneda || "?precio",
+                [columnIds.M2]: item.m2 || 1,
+                [columnIds.Ubicacion]: item.ubicacion || "?ubic",
+                [columnIds.Adicional]: JSON.stringify(item.adicional) || "?adicional",
+                [columnIds.Descripcion]: item.descripcion || "?desc",
+                [columnIds.Alternativo]: JSON.stringify(item.alternativo) || "?alt",
+                [columnIds.URL]: item.url || "?url",
+                [columnIds.Operacion]: item.operacion || "?ope",
+                [columnIds.Publicador]: item.publicador || "?pub"
+            };
+            console.log("column values justo antes de mandarse", columnValues)
+            const variables = {
+                boardId,
+                itemName: item.titulo || "test",
+                columnValues: JSON.stringify(columnValues)
+            };
+
+            try {
+                const response = await axios.post(this.url, { query, variables }, {
+                    headers: {
+                        Authorization: this.apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response from Monday API (add items):', response.data); // Debugging line
+
+                if (response.data.errors) {
+                    console.error('Errors from Monday API (add items):', response.data.errors); // Debugging line
+                    throw new Error(response.data.errors[0].message);
+                }
+
+                if (response.data.data && response.data.data.create_item) {
+                    results.push(response.data.data.create_item);
+                } else {
+                    throw new Error("Unexpected response structure");
+                }
+            } catch (error: any) {
+                console.error('Error in sendBatchToMonday:', error); // Debugging line
+                throw new Error(`Error sending batch to Monday: ${error.message}`);
+            }
+        }
+
+        return results;
+    }
+
+    private async sendBatchToMondayResidencial(boardId: number, batch: any[], columnIds: ResidencialColumnIds): Promise<any> {
+        const query = `
+            mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
+                create_item (board_id: $boardId, item_name: $itemName, column_values: $columnValues) {
+                    id
+                }
+            }
+        `;
+
+        const results = [];
+
+        for (const item of batch) {
+            const columnValues = {
+                [columnIds.Titulo]: item.titulo || "?titulo",
+                [columnIds.Descripcion]: item.descripcion || "?desc",
+                [columnIds.Alternativo]: JSON.stringify(item.alternativo) || "?alt",
+                [columnIds.Adicional]: JSON.stringify(item.adicional) || "?adicional",
+                [columnIds.URL]: item.url || "?url",
+                [columnIds.Ubicacion]: item.ubicacion || "?ubic",
+                [columnIds.Localidad]: item.localidad || "?localidad",
+                [columnIds.Barrio]: item.barrio || "?barrio",
+                [columnIds.CantDormitorios]: item.cantDormitorios || "?cantDormitorios",
+                [columnIds.TipoTransaccion]: item.tipoTransaccion || "?tipoTransaccion",
+                [columnIds.Precio]: item.precio || "?precio",
+                [columnIds.Moneda]: item.moneda || "?moneda",
+                [columnIds.M2Cubiertos]: item.m2Cubiertos || "?m2Cubiertos",
+                [columnIds.Caractersiticas]: item.caractersiticas || "?caractersiticas",
+                [columnIds.CantPlantas]: item.cantPlantas || "?cantPlantas",
+                [columnIds.CantAmbientes]: item.cantAmbientes || "?cantAmbientes",
+                [columnIds.Cochera]: item.cochera || "?cochera",
+                [columnIds.Orientacion]: item.orientacion || "?orientacion",
+                [columnIds.Estado]: item.estado || "?estado"
+            };
+
+            console.log("column values justo antes de mandarse", columnValues)
+            const variables = {
+                boardId,
+                itemName: item.titulo || "test",
+                columnValues: JSON.stringify(columnValues)
+            };
+
+            try {
+                const response = await axios.post(this.url, { query, variables }, {
+                    headers: {
+                        Authorization: this.apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response from Monday API (add items):', response.data);
+
+                if (response.data.errors) {
+                    console.error('Errors from Monday API (add items):', response.data.errors);
+                    throw new Error(response.data.errors[0].message);
+                }
+
+                if (response.data.data && response.data.data.create_item) {
+                    results.push(response.data.data.create_item);
+                } else {
+                    throw new Error("Unexpected response structure");
+                }
+            } catch (error: any) {
+                console.error('Error in sendBatchToMonday:', error);
+                throw new Error(`Error sending batch to Monday: ${error.message}`);
+            }
+        }
+
+        return results;
+    }
+    private async sendBatchToMondayLandFinder(boardId: number, batch: any[], columnIds: LandFinderColumnIds): Promise<any> {
+        const query = `
+            mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
+                create_item (board_id: $boardId, item_name: $itemName, column_values: $columnValues) {
+                    id
+                }
+            }
+        `;
+
+        const results = [];
+
+        for (const item of batch) {
+            const columnValues = {
+                [columnIds.Descripcion]: item.descripcion || "?desc",
+                [columnIds.Alternativo]: JSON.stringify(item.alternativo) || "?alt",
+                [columnIds.Adicional]: JSON.stringify(item.adicional) || "?adicional",
+                [columnIds.URL]: item.url || "?url",
+                [columnIds.Ubicacion]: item.ubicacion || "?ubic",
+                [columnIds.Localidad]: item.localidad || "?localidad",
+                [columnIds.Barrio]: item.barrio || "?barrio",
+                [columnIds.Titulo]: item.titulo || "?titulo",
+                [columnIds.Precio]: item.precio || "?precio",
+                [columnIds.Moneda]: item.moneda || "?moneda",
+                [columnIds.M2]: item.m2 || "?m2",
+                [columnIds.PrecioPorM2]: item.precioPorM2 || "?precioPorM2",
+                [columnIds.Validacion]: item.validacion || "?validacion",
+                [columnIds.Servicios]: item.servicios || "?servicios",
+                [columnIds.Electrecidad]: item.electrecidad || "?electrecidad",
+                [columnIds.Gas]: item.gas || "?gas",
+                [columnIds.Agua]: item.agua || "?agua",
+                [columnIds.Claca]: item.claca || "?claca"
+            };
+
+            console.log("column values justo antes de mandarse", columnValues)
+            const variables = {
+                boardId,
+                itemName: item.titulo || "test",
+                columnValues: JSON.stringify(columnValues)
+            };
+
+            try {
+                const response = await axios.post(this.url, { query, variables }, {
+                    headers: {
+                        Authorization: this.apiKey,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response from Monday API (add items):', response.data);
+
+                if (response.data.errors) {
+                    console.error('Errors from Monday API (add items):', response.data.errors);
+                    throw new Error(response.data.errors[0].message);
+                }
+
+                if (response.data.data && response.data.data.create_item) {
+                    results.push(response.data.data.create_item);
+                } else {
+                    throw new Error("Unexpected response structure");
+                }
+            } catch (error: any) {
+                console.error('Error in sendBatchToMonday:', error);
+                throw new Error(`Error sending batch to Monday: ${error.message}`);
+            }
+        }
+
+        return results;
+    }
+}
 class JsonStrategy implements IExportationStrategy {
     public async execute(params: { data: object[] }): Promise<Exportation> {
         const jsonData = JSON.stringify(params.data, null, 2);
