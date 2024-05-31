@@ -1,17 +1,10 @@
 import puppeteer from 'puppeteer';
 import { Exportation, MondayStrategy } from '../../Models/exportacionStrategy';
-interface ScrapeRequest {
-    propertyType: string;
-    transactionType: string;
-}
-const propertyTypeAdapter = (separator: string,wordSeparator:string, args:string[]): string => {
-    const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
-    return formattedArgs.join(separator);
-  }
+import { Filters } from '../Filters';
 
-export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
-    const { propertyType, transactionType } = req;
-    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa`;
+export const scrapArgenprop = async (req: Filters): Promise<void> => {
+    const { tipos_de_propiedad, tipos_de_transaccion,lista_de_barrios, m2} = req;
+    const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
 
     let browser;
     try {
@@ -90,6 +83,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
 
             await page.goBack();
         }
+        
         const exportation = new Exportation(elements);
         const mondayExport = await exportation.export(new MondayStrategy(), { data: elements, templateBoardId :"6342801927"});
         console.log("Monday exportado:", mondayExport);
@@ -101,5 +95,4 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
         }
     }
 };
-const propertyType = propertyTypeAdapter("-o-","-",["cocheras", "fondos de comercio", "galpones", "locales", "negocios especiales"])
-scrapArgenprop({ propertyType: propertyType, transactionType: 'venta' });
+
