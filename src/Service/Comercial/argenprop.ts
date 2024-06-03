@@ -1,12 +1,14 @@
 import puppeteer from 'puppeteer';
-import { Exportation, MondayStrategy } from '../../Models/exportacionStrategy';
 import { Filters } from '../Filters';
+import { ColumnIds } from './ColumnsIds';
 
-export const scrapArgenprop = async (req: Filters): Promise<void> => {
-    const { tipos_de_propiedad, tipos_de_transaccion,lista_de_barrios, m2} = req;
+export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
+    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
     const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
 
     let browser;
+    let elements: ColumnIds[] = [];
+    
     try {
         browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
@@ -20,8 +22,6 @@ export const scrapArgenprop = async (req: Filters): Promise<void> => {
             }));
         });
 
-        console.log('raw', rawElements);
-        let elements = [];
         for (const element of rawElements) {
             if (!element.link) continue;
             await page.goto(`https://www.argenprop.com${element.link}`);
@@ -101,41 +101,39 @@ export const scrapArgenprop = async (req: Filters): Promise<void> => {
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
                 return elements.map(el => el.textContent?.trim() || '');
             });
+
             elements.push({
-                "precio": precio.toString() || "0",
+                "Titulo": titulo,
+                "Precio": precio.toString(),
                 "Moneda": moneda,
-                "titulo": titulo,
-                "m2": Number(m2) || 0,
-                "ubicacion": ubicacion,
-                "adicional": adicional,
-                "descripcion": descripcion,
-                "alternativo": alternativo,
-                "url": url,
-                "operacion": operacion,
-                "fechaDePublicacion": fechaDePublicacion,
-                "publicador": publicador
+                "M2": m2 || 0,
+                "M2Cubiertos": 0,
+                "Ubicacion": ubicacion,
+                "Adicional": String(adicional),
+                "Descripcion": descripcion,
+                "Alternativo": String(alternativo),
+                "URL": url,
+                "Operacion": operacion,
+                "FechaDePublicacion": fechaDePublicacion,
+                "Publicador": publicador
             });
 
-            console.log(
-                "Precio", precio.toString() || "0",
-                "Moneda", moneda,
-                "titulo", titulo,
-                "m2", Number(m2) || 0,
-                "ubicacion", ubicacion,
-                "adicional", adicional,
-                "descripcion", descripcion,
-                "alternativo", alternativo,
-                "url", url,
-                "operacion", operacion,
-                "fechaDePublicacion", fechaDePublicacion,
-                "publicador", publicador
-            );
+            console.log({
+                "Titulo": titulo,
+                "Precio": precio.toString(),
+                "Moneda": moneda,
+                "M2": m2 || 0,
+                "Ubicacion": ubicacion,
+                "Adicional": String(adicional),
+                "Descripcion": descripcion,
+                "Alternativo": String(alternativo),
+                "URL": url,
+                "Operacion": operacion,
+                "FechaDePublicacion": fechaDePublicacion,
+                "Publicador": publicador
+            });
             await page.goBack();
         }
-        
-        const exportation = new Exportation(elements);
-        const mondayExport = await exportation.export(new MondayStrategy(), { data: elements, templateBoardId :"6342801927"});
-        console.log("Monday exportado:", mondayExport);
     } catch (error) {
         console.error('Error in scrapArgenprop:', error);
     } finally {
@@ -143,5 +141,6 @@ export const scrapArgenprop = async (req: Filters): Promise<void> => {
             await browser.close();  
         }
     }
-};
 
+    return elements;
+};
