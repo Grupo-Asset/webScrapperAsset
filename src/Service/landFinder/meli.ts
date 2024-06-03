@@ -3,7 +3,7 @@ import { Terreno } from '../../Models/Terreno';
 
 export const scrapMercadoLibre = async (): Promise<Terreno[]> => {
     const link = 'https://inmuebles.mercadolibre.com.ar/terrenos-lotes/villa-elisa_NoIndex_True#applied_filter_id%3DPROPERTY_TYPE%26applied_filter_name%3DInmueble%26applied_filter_order%3D4%26applied_value_id%3D242071%26applied_value_name%3DTerrenos+y+lotes%26applied_value_order%3D11%26applied_value_results%3D350%26is_custom%3Dfalse';
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     const terrenos: Terreno[] = [];
 

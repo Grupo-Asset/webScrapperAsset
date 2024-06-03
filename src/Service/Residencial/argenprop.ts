@@ -18,7 +18,7 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<Residencia[]> 
     let browser;
     let residencias: Residencia[] = [];
     try {
-        browser = await puppeteer.launch({ headless: false });
+        browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);
         await page.waitForSelector('.listing__items');

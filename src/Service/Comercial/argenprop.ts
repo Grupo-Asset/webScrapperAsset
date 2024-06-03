@@ -10,7 +10,7 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
     let elements: ColumnIds[] = [];
     
     try {
-        browser = await puppeteer.launch({ headless: false });
+        browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);  
         await page.waitForSelector('.listing__items');

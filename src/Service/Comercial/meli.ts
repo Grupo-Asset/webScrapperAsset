@@ -3,7 +3,7 @@ import { Comercio } from '../../Models/Comercio';
 
 export const scrapMercadoLibre = async (): Promise<Comercio[]> => {
     const link = 'https://listado.mercadolibre.com.ar/villa-elisa#D[A:villa%20elisa]';
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     const comercios: Comercio[] = [];
 

@@ -3,7 +3,7 @@ import { Residencia } from '../../Models/Residencia';
 
 export const scrapMercadoLibre = async (): Promise<Residencia[]> => {
     const link = 'https://listado.mercadolibre.com.ar/villa-elisa#D[A:villa%20elisa]';
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     const residencias: Residencia[] = [];
 
