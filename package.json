@@ -4,9 +4,8 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node build/main.js",
+    "start": "ts-node build/main.js",
     "dev": "ts-node-dev src/main.ts",
-    "build": "ts-node src/main.ts",
     "lint": "eslint .",
     "tsc": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import 'dotenv/config'
 import ExcelJS from 'exceljs';
-
+import { ColumnIds } from '../Service/Comercial/ColumnsIds';
 class Exportation {
     data: any;
 
@@ -24,19 +24,7 @@ interface Column {
     type: string;
 }
 
-interface ColumnIds {
-    Precio: string;
-    Moneda: string;
-    M2: string;
-    M2Cubiertos: string;
-    Ubicacion: string;
-    Adicional: string;
-    Descripcion: string;
-    Alternativo: string;
-    URL: string;
-    Operacion: string;
-    Publicador: string;
-}
+
 interface ResidencialColumnIds {
     Titulo: string;
     Descripcion: string;
@@ -156,17 +144,19 @@ class MondayStrategy implements IExportationStrategy {
             const columns = board.columns.filter((col: Column) => col.type !== 'autonumber');
 
             const columnIds: ColumnIds = {
+                Titulo: "",
                 Precio: this.getColumnId(columns, 'texto5__1'),
                 Moneda: this.getColumnId(columns, 'moneda3__1'),
-                M2: this.getColumnId(columns, 'm23__1'),
-                M2Cubiertos: this.getColumnId(columns, 'm2_cubiertos__1'),
+                M2: Number(this.getColumnId(columns, 'm23__1')),
+                M2Cubiertos: Number(this.getColumnId(columns, 'm2_cubiertos__1')),
                 Ubicacion: this.getColumnId(columns, 'texto0__1'),
                 Adicional: this.getColumnId(columns, 'adicional__1'),
                 Descripcion: this.getColumnId(columns, 'descripcion__1'),
                 Alternativo: this.getColumnId(columns, 'alternativo__1'),
                 URL: this.getColumnId(columns, 'texto7__1'),
                 Operacion: this.getColumnId(columns, 'texto9__1'),
-                Publicador: this.getColumnId(columns, 'texto8__1')
+                Publicador: this.getColumnId(columns, 'texto8__1'),
+                FechaDePublicacion: ""
             };
 
             return { boardId: board.id, columnIds };
@@ -376,7 +366,7 @@ class MondayStrategy implements IExportationStrategy {
             const columnValues = {
                 [columnIds.Precio]: item.precio || "?titulo",
                 [columnIds.Moneda]: item.moneda || "?precio",
-                [columnIds.M2]: item.m2 || 1,
+                [String(columnIds.M2)]: item.m2 || 1,
                 [columnIds.Ubicacion]: item.ubicacion || "?ubic",
                 [columnIds.Adicional]: JSON.stringify(item.adicional) || "?adicional",
                 [columnIds.Descripcion]: item.descripcion || "?desc",

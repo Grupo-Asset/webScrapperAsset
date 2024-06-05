@@ -1,21 +1,19 @@
 import puppeteer from 'puppeteer';
+import { Filters } from '../Filters';
+import { ColumnIds } from './ColumnsIds';
 
-interface ScrapeRequest {
-    propertyType: string;
-    transactionType: string;
-}
-const propertyTypeAdapter = (separator: string,wordSeparator:string, args:string[]): string => {
-    const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
-    return formattedArgs.join(separator);
-  }
 
-export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
-    const { propertyType, transactionType } = req;
-    const link = `https://www.zonaprop.com.ar/${propertyType}-${transactionType}la-plata-la-plata.html`;
 
+
+export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
+    const { tipos_de_propiedad, tipos_de_transaccion,lista_de_barrios, m2} = req;
+    const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
+                    
     let browser;
+    let elements: ColumnIds[] = [];
+
     try {
-        browser = await puppeteer.launch({ headless: false });
+        browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);
         await page.waitForSelector('.postings-container');
@@ -81,7 +79,21 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
 
             const publicador = await page.$eval('.InfoName-sc-orxlzl-4', el => el.textContent?.trim() || '');
             const alternativo = null;
-
+            elements.push({
+                "Titulo": String(titulo),
+                "Precio": precio.toString(),
+                "Moneda": moneda,
+                "M2": m2 || 0,
+                "M2Cubiertos": 0,
+                "Ubicacion": ubicacion,
+                "Adicional": String(adicional),
+                "Descripcion": descripcion,
+                "Alternativo": String(alternativo),
+                "URL": url,
+                "Operacion": String(tipos_de_transaccion),
+                "FechaDePublicacion": String(fechaDePublicacion),
+                "Publicador": publicador
+            });
             console.log(
                 "precio", precio.toString() || "0",
                 "Moneda", moneda,
@@ -99,6 +111,9 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
             );
 
             await page.goBack();
+
+             
+
         }
     } catch (error) {
         console.error('Error in scrapZonaprop:', error);
@@ -107,7 +122,6 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
             await browser.close();
         }
     }
+    return elements
 };
-const propertyType = propertyTypeAdapter("-o-","-",["cocheras", "fondos de comercio", "galpones", "locales", "negocios especiales"])
 
-scrapZonaprop({ propertyType: propertyType, transactionType: 'venta' });
