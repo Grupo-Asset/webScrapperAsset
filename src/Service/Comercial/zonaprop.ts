@@ -5,7 +5,6 @@ import { ColumnIds } from './ColumnsIds';
 export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
     const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
     const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
-                    
     let browser;
     let elements: ColumnIds[] = [];
 

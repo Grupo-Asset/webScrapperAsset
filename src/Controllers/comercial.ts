@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { scrapArgenprop } from '../Service/Residencial/argenprop';
-import { scrapZonaprop } from '../Service/Residencial/zonaprop';
-import { scrapMercadoLibre } from '../Service/Residencial/meli';
+import { scrapArgenprop } from '../Service/Comercial/argenprop';
+import { scrapZonaprop } from '../Service/Comercial/zonaprop';
+import { scrapMercadoLibre } from '../Service/Comercial/meli';
 import { Adapter } from '../Service/Adapter';
-import { ScrapeRequest, Filters } from '../Service/types';
+import { Filters } from '../Service/Filters';
+import { ColumnIds } from '../Service/Comercial/ColumnsIds';
 
-export default class ResidencialController {
+export default class ComercialController {
     static async scrap(req: Request, res: Response): Promise<Response> {
         try {
             // Validar la entrada
@@ -15,14 +16,14 @@ export default class ResidencialController {
             }
 
             // Adaptar la solicitud para cada servicio de scraping
-            const argenpropParams: ScrapeRequest = Adapter.argenprop(req);
-            const zonapropParams: ScrapeRequest = Adapter.zonaprop(req);
-            const meliParams: ScrapeRequest = Adapter.meli(req);
+            const argenpropParams: Filters = Adapter.argenprop(req);
+            const zonapropParams: Filters = Adapter.zonaprop(req);
+            const meliParams: Filters = Adapter.meli(req);
 
             // Ejecutar los servicios de scraping
-            const argenpropData: Filters = await scrapArgenprop(argenpropParams);
-            const zonapropData: Filters = await scrapZonaprop(zonapropParams);
-            const meliData: Filters = await scrapMercadoLibre(meliParams);
+            const argenpropData: ColumnIds[] = await scrapArgenprop(argenpropParams);
+            const zonapropData: ColumnIds[] = await scrapZonaprop(zonapropParams);
+            const meliData: ColumnIds[] = await scrapMercadoLibre(meliParams);
 
             // Combinar los datos obtenidos utilizando spread
             const combinedData = {

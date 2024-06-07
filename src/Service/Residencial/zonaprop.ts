@@ -1,22 +1,20 @@
 import puppeteer, { Page } from 'puppeteer';
-import { Residencia } from '../../Models/Residencia';
+import { Filters } from '../Filters';
+import { ColumnIds } from './ColumnsIds';
 
-interface ScrapeRequest {
-    propertyType: string;
-    transactionType: string;
-}
 
 const getElementText = async (page: Page, selector: string): Promise<string> => {
     const element = await page.$(selector);
     return element ? await page.evaluate(el => (el as HTMLElement).textContent?.trim() || '', element) : 'Elemento no encontrado';
 };
 
-export const scrapZonaprop = async (req: ScrapeRequest): Promise<Residencia[]> => {
-    const { propertyType, transactionType } = req;
-    const link = `https://www.zonaprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-40000-dolares`;
+export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
+    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
+
+    const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
 
     let browser;
-    let residencias: Residencia[] = [];
+    let elements: ColumnIds[] = [];
     try {
         browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
@@ -35,9 +33,6 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<Residencia[]> =
         for (const element of rawElements) {
             if (!element.link) continue;
             await page.goto(`https://www.zonaprop.com${element.link}`);
-
-            let residencia = new Residencia();
-
             const titulo = await getElementText(page, '.titlebar__address');
             const precioRaw = await getElementText(page, '.titlebar__price-mobile p');
             const precio = parseFloat(precioRaw.replace(/[A-Z ,\.]+/g, ''));
@@ -58,13 +53,12 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<Residencia[]> =
                 const text = el.textContent?.trim();
                 const match = text ? text.match(/\d+/g) : null;
                 return match ? Number(match.join('')) : 0;
-              }).catch(() => 0);
-              
-              const banos = await page.$eval('li[title="Baños"] .strong', el => {
+            }).catch(() => 0);
+            const banos = await page.$eval('li[title="Baños"] .strong', el => {
                 const match = el.textContent?.match(/\d+/g);
                 return match ? match.join('') : null;
-              }).catch(() => null);
-              
+            }).catch(() => null);
+            
             const url = `https://www.zonaprop.com${element.link}`;
             // const adicional = await getElementText(page, '.property-features-item');
             const publicador = await getElementText(page, '.form-details-heading');
@@ -132,27 +126,33 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<Residencia[]> =
             const cantPlantas = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '');
             const orientacion = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || ''); 
 
-            residencia.setTitulo(titulo);
-            residencia.setPrecio(precio);
-            residencia.setMoneda(moneda);
-            residencia.setUbicacion(ubicacion);
-            residencia.setDescripcion(descripcion);
-            residencia.setCantDormitorios(Number(cantDormitorios));
-            residencia.setCantBanos(Number(banos));
-            residencia.setCantAmbientes(Number(cantAmbientes));
-            residencia.setCantPlantas(parseFloat(cantPlantas));
-            residencia.setOrientacion(orientacion);
-            residencia.setServicios(servicios);
-            residencia.setM2Totales(Number(m2));
-            residencia.setM2Cubiertos(Number(m2Cubiertos));
-            // residencia.setTipoAmbientes(tipoAmbientes);
-            residencia.setTransaccion(transactionType);
-            residencia.setUrl(url);
-            // residencia.setCaracteristicas(caracteristicas);
-            // residencia.setInstalaciones(instalaciones);
-            residencia.setPublicador(publicador);
-
-            residencias.push(residencia);
+            const residenciaJson = {
+                Titulo: titulo,
+                Descripcion: descripcion,
+                Alternativo: String(m2 + publicador), // Agrega el valor correspondiente
+                Adicional: servicios, // Si "servicios" corresponde a "Adicional"
+                URL: url,
+                Ubicacion: ubicacion,
+                Localidad: String(banos), // Agrega el valor correspondiente
+                Barrio: '', // Agrega el valor correspondiente
+                CantDormitorios: String(cantDormitorios),
+                TipoTransaccion: String(tipos_de_transaccion),
+                Precio: String(precio),
+                Moneda: moneda,
+                M2Cubiertos: String(m2Cubiertos),
+                Caractersiticas: '', // Agrega el valor correspondiente
+                CantPlantas: String(cantPlantas),
+                CantAmbientes: String(cantAmbientes),
+                Cochera: '', // Agrega el valor correspondiente
+                Orientacion: orientacion,
+                Estado: '', // Agrega el valor correspondiente
+                // Caracteristicas: caracteristicas, // Descomentar si es necesario
+                // Instalaciones: instalaciones // Descomentar si es necesario
+            };
+            
+            // Agregar el objeto JSON al array residencias
+            elements.push(residenciaJson);
+            
 
             await page.goBack();
         }
@@ -162,7 +162,6 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<Residencia[]> =
         if (browser) {
             await browser.close();
         }
-    } return residencias;
+    } return elements;
 };
 
-scrapZonaprop({ propertyType: 'terrenos', transactionType: 'venta' });

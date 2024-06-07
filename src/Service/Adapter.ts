@@ -50,7 +50,7 @@ class Adapter {
         req.body.tipos_de_propiedades = this.argumentsAdapter("-","-",filters.tipos_de_propiedad)
         req.body.tipos_de_transaccion = this.argumentsAdapter("-","-",filters.tipos_de_transaccion)
         req.body.lista_de_barrios       = this.argumentsAdapter("-","-",filters.lista_de_barrios)
-
+        return filters
     }
 }
 export {Adapter}

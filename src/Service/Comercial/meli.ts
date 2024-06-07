@@ -4,6 +4,7 @@ import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
 
 
+
 export const scrapMercadoLibre = async (req: Filters): Promise<ColumnIds[]> => {
     const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
     const link = `https://listado.mercadolibre.com.ar/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}_ITEM*CONDITION_2230581_NoIndex_True_TOTAL*AREA_${m2}`;
@@ -12,8 +13,8 @@ export const scrapMercadoLibre = async (req: Filters): Promise<ColumnIds[]> => {
   //https://inmuebles.mercadolibre.com.ar/venta/villa-elisa_COVERED*AREA_123-*_ITEM*CONDITION_2230581_NoIndex_True#applied_filter_id%3DCOVERED_AREA%26applied_filter_name%3DSuperficie+cubierta%26applied_filter_order%3D14%26applied_value_id%3D123-*%26applied_value_name%3D123-*%26applied_value_order%3D5%26applied_value_results%3DUNKNOWN_RESULTS%26is_custom%3Dtrue
   //https://inmuebles.mercadolibre.com.ar/venta/villa-elisa-o-altos-de-san-lorenzo_ITEM*CONDITION_2230581_NoIndex_True#applied_filter_id%3Dneighborhood%26applied_filter_name%3DBarrios%26applied_filter_order%3D6%26applied_value_id%3DTVhYQWx0b3MgZGUgU2FuIExvcmVuem9UVXhCU0%26applied_value_name%3DAltos+de+San+Lorenzo%26applied_value_order%3D2%26applied_value_results%3D23%26is_custom%3Dfalse
   //https://inmuebles.mercadolibre.com.ar/venta/bsas-gba-sur/la-plata/villa-elisa-o-altos-de-san-lorenzo/_ITEM*CONDITION_2230581_NoIndex_True_TOTAL*AREA_123-321  
-  
-  const browser = await puppeteer.launch({ headless: true });
+
+    const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     let elements: ColumnIds[] = [];
 
@@ -34,7 +35,6 @@ export const scrapMercadoLibre = async (req: Filters): Promise<ColumnIds[]> => {
             if (!element.link) continue;
             await page.goto(element.link);
 
-           
 
             const titulo = await page.$eval('.ui-pdp-title', el => el.textContent?.trim() || '');
 

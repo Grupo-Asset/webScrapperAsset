@@ -1,13 +1,12 @@
 import puppeteer from 'puppeteer';
+import { Filters } from '../Filters';
+import { ColumnIds } from './ColumnsIds';
 
-interface ScrapeRequest {
-    propertyType: string;
-    transactionType: string;
-}
+export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
+    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
 
-export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
-    const { propertyType, transactionType } = req;
-    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-40000-dolares`;
+    const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
+    let elements: ColumnIds[] = [];
 
     let browser;
     try {
@@ -41,26 +40,36 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             const servicios = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
 
             const adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
-            const fechaDePublicacion = null;
-            const publicador = await page.$eval('.form-details-heading', el => el.textContent?.trim() || '');
+            // const fechaDePublicacion = null;
+            // const publicador = await page.$eval('.form-details-heading', el => el.textContent?.trim() || '');
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
-                return elements.map(el => el.textContent?.trim() || '');
+                return elements.map(el => el.textContent?.trim() || '').join(', ');
             });
 
-            console.log(
-                "precio", precio.toString() || "0",
-                "Moneda", moneda,
-                "titulo", titulo,
-                "m2", Number(m2) || 1,
-                "ubicacion", ubicacion,
-                "adicional", adicional,
-                "descripcion", descripcion,
-                "alternativo", alternativo,
-                "url", url,
-                "servicios", servicios,
-                "fechaDePublicacion", fechaDePublicacion,
-                "publicador", publicador
-            );
+            const residenciaJson: ColumnIds = {
+                Titulo: titulo,
+                Precio: precio.toString(),
+                Moneda: moneda,
+                Descripcion: descripcion,
+                URL: url,
+                Ubicacion: ubicacion,
+                Servicios: servicios,
+                M2: m2,
+                Adicional: adicional,
+                Alternativo: alternativo,
+                Localidad: '', // Agrega el valor correspondiente
+                Barrio: '', // Agrega el valor correspondiente
+                PrecioPorM2: '', // Agrega el valor correspondiente
+                Validacion: '', // Agrega el valor correspondiente
+                Electrecidad: '', // Agrega el valor correspondiente
+                Gas: '', // Agrega el valor correspondiente
+                Agua: '', // Agrega el valor correspondiente
+                Claca: '', // Agrega el valor correspondiente
+            };
+
+            console.log(residenciaJson);
+
+            elements.push(residenciaJson);
 
             await page.goBack();
         }
@@ -71,6 +80,5 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<void> => {
             await browser.close();
         }
     }
+    return elements;
 };
-
-scrapArgenprop({ propertyType: 'terrenos', transactionType: 'venta' });

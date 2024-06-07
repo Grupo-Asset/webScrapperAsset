@@ -3,6 +3,8 @@ import { scrapArgenprop } from '../Service/Residencial/argenprop';
 import { scrapZonaprop } from '../Service/Residencial/zonaprop';
 import { scrapMercadoLibre } from '../Service/Residencial/meli';
 import { Adapter } from '../Service/Adapter';
+import { Filters } from '../Service/Filters';
+
 
 export default class ResidencialController {
     static async scrap(req: Request, res: Response): Promise<Response> {
@@ -14,9 +16,9 @@ export default class ResidencialController {
             }
 
             // Adaptar la solicitud para cada servicio de scraping
-            const argenpropParams = Adapter.argenprop(req);
-            const zonapropParams = Adapter.zonaprop(req);
-            const meliParams = Adapter.meli(req);
+            const argenpropParams: Filters = Adapter.argenprop(req);
+            const zonapropParams:Filters = Adapter.zonaprop(req);
+            const meliParams:Filters = Adapter.meli(req);
 
             // Ejecutar los servicios de scraping
             const argenpropData = await scrapArgenprop(argenpropParams);

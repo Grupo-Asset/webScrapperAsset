@@ -1,15 +1,16 @@
 import puppeteer from 'puppeteer';
+import { ColumnIds } from './ColumnsIds';
+import { Filters } from '../Filters';
 
-interface ScrapeRequest {
-    propertyType: string;
-    transactionType: string;
-}
 
-export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
-    const { propertyType, transactionType } = req;
-    const link = `https://www.zonaprop.com.ar/${propertyType}-${transactionType}la-plata-la-plata.html`;
+export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
+    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
+
+    const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
 
     let browser;
+    let elements: ColumnIds[] = [];
+
     try {
         browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
@@ -47,7 +48,7 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
             const ubicacion = await page.$eval('.section-location-property h4', el => el.textContent?.trim() || '');
             const descripcion = await page.$eval('#longDescription div', el => el.textContent?.trim() || '');
             const url = `https://www.zonaprop.com${element.link}`;
-            const servicios = null;
+            
 
             const adicional = await page.$$eval('.sc-hwdzOV span', elements => elements.map(el => el.textContent?.trim() || ''));
             const fechaDePublicacionTimestamp = await page.$eval('.view-users-container div div p', el => {
@@ -58,10 +59,28 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
                 return fechaPublicacion;
             });
             const fechaDePublicacion = new Date(fechaDePublicacionTimestamp);
+            const servicios = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
 
             const publicador = await page.$eval('.InfoName-sc-orxlzl-4', el => el.textContent?.trim() || '');
             const alternativo = null;
-
+            
+            elements.push(
+                {
+                    "Titulo": String(titulo),
+                    "Precio": precio.toString(),
+                    "Moneda": moneda,
+                    "M2": m2,
+                    "Ubicacion": ubicacion,
+                    "Adicional": String(adicional),
+                    "Descripcion": descripcion,
+                    "Alternativo": alternativo||"",
+                    "URL": url,
+                    "Servicios": servicios|| "",
+                    // "FechaDePublicacion": fechaDePublicacion,
+                    // "Publicador": publicador,
+                }
+            )
+            
             console.log(
                 "precio", precio.toString() || "0",
                 "Moneda", moneda,
@@ -76,7 +95,6 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
                 "fechaDePublicacion", fechaDePublicacion,
                 "publicador", publicador
             );
-
             await page.goBack();
         }
     } catch (error) {
@@ -86,6 +104,5 @@ export const scrapZonaprop = async (req: ScrapeRequest): Promise<void> => {
             await browser.close();
         }
     }
+    return elements
 };
-
-scrapZonaprop({ propertyType: 'terrenos', transactionType: 'venta' });

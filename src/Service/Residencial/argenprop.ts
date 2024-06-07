@@ -1,22 +1,19 @@
 import puppeteer, { Page } from 'puppeteer';
-import { Residencia } from '../../Models/Residencia';
+import { Filters } from '../Filters';
+import { ColumnIds } from './ColumnsIds';
 
-interface ScrapeRequest {
-    propertyType: string;
-    transactionType: string;
-}
 
 const getElementText = async (page: Page, selector: string): Promise<string> => {
     const element = await page.$(selector);
     return element ? await page.evaluate(el => (el as HTMLElement).textContent?.trim() || '', element) : 'Elemento no encontrado';
 };
 
-export const scrapArgenprop = async (req: ScrapeRequest): Promise<Residencia[]> => {
-    const { propertyType, transactionType } = req;
-    const link = `https://www.argenprop.com/${propertyType}/${transactionType}/villa-elisa?hasta-40000-dolares`;
+export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
+    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
+    const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
 
     let browser;
-    let residencias: Residencia[] = [];
+    let elements: ColumnIds[] = [];
     try {
         browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
@@ -36,8 +33,6 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<Residencia[]> 
             if (!element.link) continue;
             await page.goto(`https://www.argenprop.com${element.link}`);
             await page.waitForSelector('.titlebar__address'); // Espera a que el contenido principal se cargue
-
-            let residencia = new Residencia();
 
             const titulo = await getElementText(page, '.titlebar__address');
             const precioRaw = await getElementText(page, '.titlebar__price-mobile p');
@@ -187,24 +182,33 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<Residencia[]> 
             const cantPlantas = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '').catch(() => '0');
             const orientacion = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '').catch(() => 'No indica');
 
-            residencia.setTitulo(titulo);
-            residencia.setPrecio(precio);
-            residencia.setMoneda(moneda);
-            residencia.setUbicacion(ubicacion);
-            residencia.setDescripcion(descripcion);
-            residencia.setCantDormitorios(Number(cantDormitorios));
-            residencia.setCantBanos(Number(banos));
-            residencia.setCantAmbientes(Number(cantAmbientes));
-            residencia.setCantPlantas(parseFloat(cantPlantas));
-            residencia.setOrientacion(orientacion);
-            residencia.setServicios(servicios);
-            residencia.setM2Totales(Number(m2));
-            residencia.setM2Cubiertos(Number(m2Cubiertos));
-            residencia.setTransaccion(transactionType);
-            residencia.setUrl(url);
-            residencia.setPublicador(publicador);
 
-            residencias.push(residencia);
+
+            const residenciaJson = {
+                Titulo: titulo,
+                Descripcion: descripcion,
+                Alternativo: String(publicador), // Agrega el valor correspondiente
+                Adicional: String(banos), // Agrega el valor correspondiente
+                URL: url,
+                Ubicacion: ubicacion,
+                Localidad: '', // Agrega el valor correspondiente
+                Barrio: '', // Agrega el valor correspondiente
+                CantDormitorios: String(cantDormitorios),
+                TipoTransaccion: String(tipos_de_transaccion),
+                Precio: String(precio),
+                Moneda: moneda,
+                M2Cubiertos: String(m2Cubiertos),
+                Caractersiticas: '', // Agrega el valor correspondiente
+                CantPlantas: String(cantPlantas),
+                CantAmbientes: String(cantAmbientes),
+                Cochera: '', // Agrega el valor correspondiente
+                Orientacion: orientacion,
+                Estado: '', // Agrega el valor correspondiente
+            };
+            
+            // Agregar el objeto JSON al array elements
+            elements.push(residenciaJson);
+            
 
             await page.goBack();
         }
@@ -216,12 +220,6 @@ export const scrapArgenprop = async (req: ScrapeRequest): Promise<Residencia[]> 
         }
     }
     
-    // Imprimir resultados antes de retornar
-    console.log('Residencias:', residencias);
-    return residencias;
+    // Imprimir resultados antes de retorn
+    return elements;
 };
-
-// Llamar a la función y manejar la promesa
-scrapArgenprop({ propertyType: 'casas', transactionType: 'venta' })
-    .then(residencias => console.log('Scraping completado. Resultados:', residencias))
-    .catch(error => console.error('Error durante el scraping:', error));
