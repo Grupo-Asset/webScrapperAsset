@@ -5,6 +5,7 @@ import { scrapMercadoLibre } from '../Service/Comercial/meli';
 import { Adapter } from '../Service/Adapter';
 import { Filters } from '../Service/Filters';
 import { ColumnIds } from '../Service/Comercial/ColumnsIds';
+import { Exportation, MondayStrategy } from '../Models/exportacionStrategy';
 
 export default class ComercialController {
     static async scrap(req: Request, res: Response): Promise<Response> {
@@ -31,6 +32,10 @@ export default class ComercialController {
                 ...zonapropData,
                 ...meliData
             };
+                    
+        const exportation = new Exportation(combinedData);
+        const mondayExport = await exportation.export(new MondayStrategy(), { data: combinedData, templateBoardId :"6342801927"});
+        console.log("Monday exportado:", mondayExport);
 
             return res.status(200).json({ message: 'Scraping completed successfully', data: combinedData });
         } catch (error) {
