@@ -1,7 +1,9 @@
 import axios from 'axios';
 import 'dotenv/config'
 import ExcelJS from 'exceljs';
-import { ColumnIds } from '../Service/Comercial/ColumnsIds';
+import { ColumnIds as ComercialColumnIds } from '../Service/Comercial/ColumnsIds';
+import { ColumnIds as ResidencialColumnIds } from '../Service/Residencial/ColumnsIds';
+import { ColumnIds as LandFinderColumnIds } from '../Service/landFinder/ColumnsIds';
 class Exportation {
     data: any;
 
@@ -24,48 +26,6 @@ interface Column {
     type: string;
 }
 
-
-interface ResidencialColumnIds {
-    Titulo: string;
-    Descripcion: string;
-    Alternativo: string;
-    Adicional: string;
-    URL: string;
-    Ubicacion: string;
-    Localidad: string;
-    Barrio: string;
-    CantDormitorios: string;
-    TipoTransaccion: string;
-    Precio: string;
-    Moneda: string;
-    M2Cubiertos: string;
-    Caractersiticas: string;
-    CantPlantas: string;
-    CantAmbientes: string;
-    Cochera: string;
-    Orientacion: string;
-    Estado: string;
-}
-interface LandFinderColumnIds {
-    Descripcion: string;
-    Alternativo: string;
-    Adicional: string;
-    URL: string;
-    Ubicacion: string;
-    Localidad: string;
-    Barrio: string;
-    Titulo: string;
-    Precio: string;
-    Moneda: string;
-    M2: string;
-    PrecioPorM2: string;
-    Validacion: string;
-    Servicios: string;
-    Electrecidad: string;
-    Gas: string;
-    Agua: string;
-    Claca: string;
-}
 
 class MondayStrategy implements IExportationStrategy {
     
@@ -100,7 +60,7 @@ class MondayStrategy implements IExportationStrategy {
     }
 
 
-    private async cloneTemplateBoard(templateBoardId: string): Promise<{ boardId: number, columnIds: ColumnIds }> {
+    private async cloneTemplateBoard(templateBoardId: string): Promise<{ boardId: number, columnIds: ComercialColumnIds }> {
 
         const query = `
             mutation DuplicateBoard($boardId: ID!) { 
@@ -143,7 +103,7 @@ class MondayStrategy implements IExportationStrategy {
             const board = response.data.data.duplicate_board.board;
             const columns = board.columns.filter((col: Column) => col.type !== 'autonumber');
 
-            const columnIds: ColumnIds = {
+            const columnIds: ComercialColumnIds = {
                 Titulo: "",
                 Precio: this.getColumnId(columns, 'texto5__1'),
                 Moneda: this.getColumnId(columns, 'moneda3__1'),
@@ -313,7 +273,7 @@ class MondayStrategy implements IExportationStrategy {
         return column.id;
     }
 
-    private async addItemsToBoard(boardId: number, data: any[], columnIds: ColumnIds): Promise<any> {
+    private async addItemsToBoard(boardId: number, data: any[], columnIds: ComercialColumnIds): Promise<any> {
         const batchSize = 50; // Define el tamaño del lote
         const results = [];
         console.log("llego al add items y este es el valor de data: ",data)
@@ -351,7 +311,7 @@ class MondayStrategy implements IExportationStrategy {
         return results;
     }
 
-    private async sendBatchToMonday(boardId: number, batch: any[], columnIds: ColumnIds): Promise<any> {
+    private async sendBatchToMonday(boardId: number, batch: any[], columnIds: ComercialColumnIds): Promise<any> {
         const query = `
             mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
                 create_item (board_id: $boardId, item_name: $itemName, column_values: $columnValues) {

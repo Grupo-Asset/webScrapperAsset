@@ -1,7 +1,6 @@
 import puppeteer from "puppeteer";
 
 
-
 let scrap = async (req: {propertyType:string, transactionType:string})=> {
     let {propertyType,transactionType} = req
 

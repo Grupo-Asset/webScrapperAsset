@@ -1,16 +1,39 @@
 import { Request, Response } from 'express';
+import { scrapArgenprop } from '../Service/Residencial/argenprop';
+import { scrapZonaprop } from '../Service/Residencial/zonaprop';
+import { scrapMercadoLibre } from '../Service/Residencial/meli';
+import { Adapter } from '../Service/Adapter';
 
 export default class ResidencialController {
-    
     static async scrap(req: Request, res: Response): Promise<Response> {
         try {
-            // const { oferta } = req.body;
-   
-            return res.status(200).json({ message: 'Scraping completed successfully' });
+            // Validar la entrada
+            const { oferta } = req.body;
+            if (!oferta) {
+                return res.status(400).json({ error: 'Oferta is required' });
+            }
+
+            // Adaptar la solicitud para cada servicio de scraping
+            const argenpropParams = Adapter.argenprop(req);
+            const zonapropParams = Adapter.zonaprop(req);
+            const meliParams = Adapter.meli(req);
+
+            // Ejecutar los servicios de scraping
+            const argenpropData = await scrapArgenprop(argenpropParams);
+            const zonapropData = await scrapZonaprop(zonapropParams);
+            const meliData = await scrapMercadoLibre(meliParams);
+
+            // Aquí puedes combinar, procesar o guardar los datos obtenidos si es necesario
+            const combinedData = {
+                argenprop: argenpropData,
+                zonaprop: zonapropData,
+                meli: meliData
+            };
+
+            return res.status(200).json({ message: 'Scraping completed successfully', data: combinedData });
         } catch (error) {
-            console.error('Error in modelAsigment:', error);
+            console.error('Error in scrap:', error);
             return res.status(500).json({ error: 'Internal Server Error' });
         }
     }
-
 }

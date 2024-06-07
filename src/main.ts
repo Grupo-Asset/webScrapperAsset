@@ -29,21 +29,22 @@ app.get('/', (_,res)=>{
         }
         
         .panel {
-            width: 800px; /* Aumentamos el ancho para acomodar dos columnas */
-            padding: 20px;
-            background-color: #EBECF0;
-            box-shadow: 8px 8px 12px -2px rgba(72, 79, 96, 0.4),
-                        -6px -6px 12px -1px rgba(255, 255, 255, 1);
-            border-radius: 20px;
-            text-align: left; /* Alineamos el texto a la izquierda */
-            display: flex; /* Usamos flexbox para distribuir elementos en dos columnas */
-            flex-wrap: wrap; /* Permitimos que los elementos se envuelvan en múltiples líneas */
-            gap: 20px; /* Espaciado entre elementos */
+          /* width: 800px; */
+          padding: 20px;
+          background-color: #EBECF0;
+          box-shadow: 8px 8px 12px -2px rgba(72, 79, 96, 0.4), -6px -6px 12px -1px rgba(255, 255, 255, 1);
+          border-radius: 20px;
+          /* text-align: left; */
+          /* display: flex; */
+          /* flex-wrap: wrap; */      
         }
         
         .column {
-            flex: 1; /* Las columnas deben expandirse para ocupar el espacio disponible */
-            min-width: 300px; /* Establecemos un ancho mínimo para las columnas */
+            flex: 1;
+            min-width: 300px;
+            /* padding: 10px; */
+            display: flex;
+            flex-wrap: wrap;
         }
         
         h2 {
@@ -271,239 +272,238 @@ app.get('/', (_,res)=>{
           transform: rotate(45deg);
           transition: all 250ms;
         }
+        form{ 
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
     </style>
     </head>
     <body>
-        <div class="bg">
+    <div class="bg">
         <h2>Web Scrapper Asset</h2>
-            <section class="panel">
-            
-            <div class="column">
-                  <form id="scrapeForm">
-                  <label for="tipo_de_busqueda">Tipo de Búsqueda:</label><br>
-                  <select id="tipo_de_busqueda" name="tipo_de_busqueda">
-                    <option value="Zonaprop">Zonaprop</option>
-                    <option value="Mercadolibre">Mercadolibre</option>
-                    <option value="Argenprop">Argenprop</option>
-                    <option value="Properati">Properati</option>
-                    <option value="Inmuebles Clarín">Inmuebles Clarín</option>
-                    <option value="La Nación Propiedades">La Nación Propiedades</option>
-                    <option value="Facebook">Facebook</option>
-                    <option value="Landfinder">Landfinder</option>
-                  </select><br>
-    
-                  <label for="tipo_de_busqueda">Tipo propiedad:</label>
-                  <button type="button" class="open-modal-button" onclick="openModal()">Seleccionar</button>
-    
-                    <div id="propertyModal" class="modal">
-                      <div class="modal-content">
-                        <span class="close" onclick="closeModal()">&times;</span>
+        <section class="panel">
+            <form id="scrapeForm">
+                <div class="column">
+                    <label for="tipo_de_busqueda">Tipo de Búsqueda:</label><br>
+                    <select id="tipo_de_busqueda" name="tipo_de_busqueda">
+                        <option value="Comercial">Comercial</option>
+                        <option value="Residencial">Residencial</option>
+                        <option value="Landfinder">Landfinder</option>
+                    </select><br>
+                </div>
+                <div class="column">
+                    <label for="tipo_propiedad">Tipo de Propiedad:</label>
+                    <button type="button" class="open-modal-button" onclick="openModal('propertyModal')">Seleccionar</button>
+                </div>
+
+                <div id="propertyModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeModal('propertyModal')">&times;</span>
                         <h2>Seleccionar</h2>
-
                         <ul class="checkbox-list checkbox-wrapper-53">
-                        <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                                  
-                                  <input type="checkbox" id="departamento" name="tipos_de_propiedad" value="departamento">
-                                  <div class="checkmark"></div>
-                                  Departamento
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                                  
-                                  <input type="checkbox" id="depto-tipo-casa" name="tipos_de_propiedad" value="depto-tipo-casa">
-                                  <div class="checkmark"></div>
-                                  PH
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="casa" name="tipos_de_propiedad" value="casa">
-                              <div class="checkmark"></div>
-                              Casa
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="quinta" name="tipos_de_propiedad" value="quinta">
-                              <div class="checkmark"></div>
-                              Quinta
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="cochera" name="tipos_de_propiedad" value="cochera">
-                              <div class="checkmark"></div>
-                              Cochera
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="local" name="tipos_de_propiedad" value="local">
-                              <div class="checkmark"></div>
-                              Local
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="hotel" name="tipos_de_propiedad" value="hotel">
-                              <div class="checkmark"></div>
-                              Hotel
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="terreno" name="tipos_de_propiedad" value="terreno">
-                              <div class="checkmark"></div>
-                              Terreno
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="oficina" name="tipos_de_propiedad" value="oficina">
-                              <div class="checkmark"></div>
-                              Oficina
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="campo" name="tipos_de_propiedad" value="campo">
-                              <div class="checkmark"></div>
-                              Campo
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="fondo-comercio" name="tipos_de_propiedad" value="fondo-comercio">
-                              <div class="checkmark"></div>
-                              Fondo de comercio
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="galpon" name="tipos_de_propiedad" value="galpon">
-                              <div class="checkmark"></div>
-                              Galpón
-                              </label>
-                          </div>
-                      </li>
-                      <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                              <input type="checkbox" id="negocio-especial" name="tipos_de_propiedad" value="negocio-especial">
-                              <div class="checkmark"></div>
-                              Negocio especial
-                              </label>
-                          </div>
-                      </li>
+                            <li>
+                                <label class="container">
+                                    <input type="checkbox" id="departamento" name="tipos_de_propiedad" value="departamento">
+                                    <div class="checkmark"></div>
+                                    Departamento
+                                </label>
+                            </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="depto-tipo-casa" name="tipos_de_propiedad" value="depto-tipo-casa">
+                                            <div class="checkmark"></div>
+                                            PH
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="casa" name="tipos_de_propiedad" value="casa">
+                                            <div class="checkmark"></div>
+                                            Casa
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="quinta" name="tipos_de_propiedad" value="quinta">
+                                            <div class="checkmark"></div>
+                                            Quinta
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="cochera" name="tipos_de_propiedad" value="cochera">
+                                            <div class="checkmark"></div>
+                                            Cochera
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="local" name="tipos_de_propiedad" value="local">
+                                            <div class="checkmark"></div>
+                                            Local
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="hotel" name="tipos_de_propiedad" value="hotel">
+                                            <div class="checkmark"></div>
+                                            Hotel
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="terreno" name="tipos_de_propiedad" value="terreno">
+                                            <div class="checkmark"></div>
+                                            Terreno
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="oficina" name="tipos_de_propiedad" value="oficina">
+                                            <div class="checkmark"></div>
+                                            Oficina
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="campo" name="tipos_de_propiedad" value="campo">
+                                            <div class="checkmark"></div>
+                                            Campo
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="fondo-comercio" name="tipos_de_propiedad" value="fondo-comercio">
+                                            <div class="checkmark"></div>
+                                            Fondo de comercio
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="galpon" name="tipos_de_propiedad" value="galpon">
+                                            <div class="checkmark"></div>
+                                            Galpón
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="negocio-especial" name="tipos_de_propiedad" value="negocio-especial">
+                                            <div class="checkmark"></div>
+                                            Negocio especial
+                                        </label>
+                                    </li>
+                                    </ul>
+                                    </div>
+                                </div>
+                
+                                <div class="column">
+                                    <label for="tipo_transaccion">Tipo de Transacción:</label>
+                                    <button type="button" class="open-modal-button" onclick="openModal('transactionModal')">Seleccionar</button>
+                                </div>
+                
+                                <div id="transactionModal" class="modal">
+                                    <div class="modal-content">
+                                        <span class="close" onclick="closeModal('transactionModal')">&times;</span>
+                                        <h2>Seleccionar</h2>
+                                        <ul class="checkbox-list checkbox-wrapper-53">
+                                            <li>
+                                                <label class="container">
+                                                    <input type="checkbox" id="venta" name="tipos_de_transaccion" value="venta">
+                                                    <div class="checkmark"></div>
+                                                    Venta
+                                                </label>
+                                            </li>
+                
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="alquiler" name="tipos_de_transaccion" value="alquiler">
+                                            <div class="checkmark"></div>
+                                            Alquiler
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label class="container">
+                                            <input type="checkbox" id="traspaso" name="tipos_de_transaccion" value="traspaso">
+                                            <div class="checkmark"></div>
+                                            Traspaso
+                                        </label>
+                                    </li>
+                                    </ul>
+                                    </div>
+                                </div>
+                
+                                <div class="column">
+                                    <label for="m2_minimos">M2 Mínimos:</label><br>
+                                    <input type="number" id="m2_minimos" name="m2_minimos" value="0"><br>
+                                </div>
+                
+                                <div class="column">
+                                    <label for="m2_maximos">M2 Máximos:</label><br>
+                                    <input type="number" id="m2_maximos" name="m2_maximos" value="0"><br>
+                                </div>
+                
+                                <div class="column">
+                                    <label for="lista_de_barrios">Lista de Barrios:</label><br>
+                                    <input type="text" id="lista_de_barrios" name="lista_de_barrios" value="villa Elisa"><br>
+                                </div>
+                
 
-                        </ul>
-                      </div>
+                            </form>
+                            <div class="column">
+                            <button type="button" class="button" onclick="submitForm()">Iniciar Scrapeo</button>
+                        </div>
+        
+                        <div class="column">
+                            <a href="https://assetrealestate.monday.com/boards/6001985151/" class="button">Monday</a>
+                        </div>
+                        </section>
                     </div>
     
-                    <label for="tipo_de_busqueda">Tipo Transacción:</label>
-                  <button type="button" class="open-modal-button" onclick="openModal()">Seleccionar</button>
+        <script>
+            function submitForm() {
+                const formData = {
+                    tipos_de_propiedad: Array.from(document.querySelectorAll('input[name="tipos_de_propiedad"]:checked')).map(el => el.value),
+                    tipos_de_transaccion: Array.from(document.querySelectorAll('input[name="tipos_de_transaccion"]:checked')).map(el => el.value),
+                    m2_minimos: parseInt(document.getElementById('m2_minimos').value),
+                    m2_maximos: parseInt(document.getElementById('m2_maximos').value),
+                    lista_de_barrios: document.getElementById('lista_de_barrios').value.split(','),
+                    tipo_de_busqueda: document.getElementById('tipo_de_busqueda').value
+                };
     
-                    <div id="propertyModal" class="modal">
-                      <div class="modal-content">
-                        <span class="close" onclick="closeModal()">&times;</span>
-                        <h2>Seleccionar</h2>
-
-                        <ul class="checkbox-list checkbox-wrapper-53">
-                        <li>
-                          <div class="checkbox-wrapper-53">
-                              <label class="container">
-                                  
-                                  <input type="checkbox" id="departamento" name="tipos_de_propiedad" value="departamento">
-                                  <div class="checkmark"></div>
-                                  Departamento
-                              </label>
-                          </div>
-                      </li>
-                      </ul>
-                      
-                    <label for="m2_minimos">M2 Mínimos:</label><br>
-                    <input type="number" id="m2_minimos" name="m2_minimos" value="0"><br>
-                    <label for="m2_maximos">M2 Máximos:</label><br>
-                    <input type="number" id="m2_maximos" name="m2_maximos" value="0"><br>
-                    <label for="lista_de_barrios">Lista de Barrios:</label><br>
-                    <input type="text" id="lista_de_barrios" name="lista_de_barrios" value="villa Elisa"><br>
-                </div>
-                <button type="button" class="button" onclick="submitForm()">Iniciar Scrapeo</button>
-                <a href="https://assetrealestate.monday.com/boards/6001985151/" class="button">Monday</a>
-            </form>
-        </section>
-    </div>
+                fetch('http://localhost:4000/scrap', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            }
     
-    <script>
-        function submitForm() {
-            const formData = {
-                tipos_de_propiedad: Array.from(document.querySelectorAll('input[name="tipos_de_propiedad"]:checked')).map(el => el.value),
-                tipos_de_transaccion: document.getElementById('tipos_de_transaccion').value.split(','),
-                m2_minimos: parseInt(document.getElementById('m2_minimos').value),
-                m2_maximos: parseInt(document.getElementById('m2_maximos').value),
-                lista_de_barrios: document.getElementById('lista_de_barrios').value.split(','),
-                tipo_de_busqueda: document.getElementById('tipo_de_busqueda').value
-            };
+            function openModal(modalId) {
+                document.getElementById(modalId).style.display = "block";
+            }
     
-            fetch('http://localhost:4000/scrap', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        }
+            function closeModal(modalId) {
+                document.getElementById(modalId).style.display = "none";
+            }
     
-        function openModal() {
-          document.getElementById("propertyModal").style.display = "block";
-        }
-      
-        function closeModal() {
-          document.getElementById("propertyModal").style.display = "none";
-        }
-      
-        window.onclick = function(event) {
-          if (event.target == document.getElementById("propertyModal")) {
-            closeModal();
-          }
-        }
-    </script>
+            window.onclick = function(event) {
+                if (event.target.classList.contains('modal')) {
+                    closeModal(event.target.id);
+                }
+            }
+        </script>
     </body>
     </html>
-      
-`)
+    `
+    )
 })
 
 app.get('/ping',(_req,res) => {//_req es un parametro que no se usa y por typescript se marca con _

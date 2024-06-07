@@ -2,11 +2,8 @@ import puppeteer from 'puppeteer';
 import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
 
-
-
-
 export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
-    const { tipos_de_propiedad, tipos_de_transaccion,lista_de_barrios, m2} = req;
+    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
     const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
                     
     let browser;
@@ -31,20 +28,22 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
             if (!element.link) continue;
             await page.goto(`https://www.zonaprop.com.ar${element.link}`);
             await new Promise(resolve => setTimeout(resolve, 5000));
+
             const tituloElement = await page.$('.title-type-sup-property, .title-h1-development');
             const titulo = tituloElement ? await page.evaluate(el => el.textContent?.trim(), tituloElement) : '';
+            
             const precioRaw = await page.$eval('.price-value span span', el => el.textContent?.trim() || '');
             const precio = parseFloat(precioRaw.replace(/[A-Z ,\.]+/g, ''));
             const moneda = precioRaw.replace(/[0-9 ,\.]+/g, '');
 
-            const m2 : number= await page.$$eval('#section-icon-features-property li', elements => {
+            const m2Totales: number = await page.$$eval('#section-icon-features-property li', elements => {
                 const li = elements.find(el => el.textContent?.includes('m² tot.'));
                 if (li) {
                     const match = li.textContent?.match(/\d+/g);
                     return match ? Number(match.join('')) : 0;
                 }
                 return 0;
-            }); 
+            });
 
             const m2Cubiertos: number = await page.$$eval('#section-icon-features-property li', elements => {
                 const li = elements.find(el => el.textContent?.includes('m² cub.') || el.textContent?.includes('m² cubiert') || el.textContent?.includes('m² cubierto') || el.textContent?.includes('m² cubierta') || el.textContent?.includes('m² cubiertos'));
@@ -60,12 +59,10 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
                 }
                 return 0;
             });
-            
 
             const ubicacion = await page.$eval('.section-location-property h4', el => el.textContent?.trim() || '');
             const descripcion = await page.$eval('#longDescription div', el => el.textContent?.trim() || '');
             const url = `https://www.zonaprop.com${element.link}`;
-            const servicios = null;
 
             const adicional = await page.$$eval('.sc-hwdzOV span', elements => elements.map(el => el.textContent?.trim() || ''));
             const fechaDePublicacionTimestamp = await page.$eval('.view-users-container div div p', el => {
@@ -79,12 +76,13 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
 
             const publicador = await page.$eval('.InfoName-sc-orxlzl-4', el => el.textContent?.trim() || '');
             const alternativo = null;
+
             elements.push({
                 "Titulo": String(titulo),
                 "Precio": precio.toString(),
                 "Moneda": moneda,
-                "M2": m2 || 0,
-                "M2Cubiertos": 0,
+                "M2": m2Totales || 0,
+                "M2Cubiertos": m2Cubiertos || 0,
                 "Ubicacion": ubicacion,
                 "Adicional": String(adicional),
                 "Descripcion": descripcion,
@@ -94,26 +92,23 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
                 "FechaDePublicacion": String(fechaDePublicacion),
                 "Publicador": publicador
             });
-            console.log(
-                "precio", precio.toString() || "0",
-                "Moneda", moneda,
-                "titulo", titulo,
-                "m2", Number(m2) || 1,
-                "m2Cubiertos",m2Cubiertos,
-                "ubicacion", ubicacion,
-                "adicional", adicional,
-                "descripcion", descripcion,
-                "alternativo", alternativo,
-                "url", url,
-                "servicios", servicios,
-                "fechaDePublicacion", fechaDePublicacion,
-                "publicador", publicador
-            );
+
+            console.log({
+                precio: precio.toString() || "0",
+                moneda,
+                titulo,
+                m2: m2Totales || 0,
+                m2Cubiertos,
+                ubicacion,
+                adicional,
+                descripcion,
+                alternativo,
+                url,
+                fechaDePublicacion,
+                publicador
+            });
 
             await page.goBack();
-
-             
-
         }
     } catch (error) {
         console.error('Error in scrapZonaprop:', error);
@@ -122,6 +117,5 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
             await browser.close();
         }
     }
-    return elements
+    return elements;
 };
-
