@@ -1,10 +1,11 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { TimeoutError } from 'puppeteer';
 import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
 
 export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
     const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
     const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
+    console.log(link)
     let browser;
     let elements: ColumnIds[] = [];
 
@@ -12,7 +13,7 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
         browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);
-        await page.waitForSelector('.postings-container');
+        await page.waitForSelector('.postings-container',{ timeout: 10000 });
 
         const rawElements = await page.evaluate(() => {
             const products = Array.from(document.querySelectorAll('.PostingCardLayout-sc-i1odl-0'));
@@ -77,19 +78,19 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
             const alternativo = null;
 
             elements.push({
-                "Titulo": String(titulo),
-                "Precio": precio.toString(),
-                "Moneda": moneda,
-                "M2": m2Totales || 0,
-                "M2Cubiertos": m2Cubiertos || 0,
-                "Ubicacion": ubicacion,
-                "Adicional": String(adicional),
-                "Descripcion": descripcion,
-                "Alternativo": String(alternativo),
-                "URL": url,
-                "Operacion": String(tipos_de_transaccion),
-                "FechaDePublicacion": String(fechaDePublicacion),
-                "Publicador": publicador
+                "titulo": String(titulo),
+                "precio": precio.toString(),
+                "moneda": moneda,
+                "m2": m2Totales || 0,
+                "m2Cubiertos": m2Cubiertos || 0,
+                "ubicacion": ubicacion,
+                "adicional": String(adicional),
+                "descripcion": descripcion,
+                "alternativo": String(alternativo),
+                "url": url,
+                "operacion": String(tipos_de_transaccion),
+                "fechaDePublicacion": String(fechaDePublicacion),
+                "publicador": publicador
             });
 
             console.log({
@@ -110,6 +111,10 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
             await page.goBack();
         }
     } catch (error) {
+        if (error instanceof TimeoutError){
+            console.log("Zonaprop no encontro ningun resultado")
+            return []
+        }
         console.error('Error in scrapZonaprop:', error);
     } finally {
         if (browser) {

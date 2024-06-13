@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { TimeoutError } from 'puppeteer';
 
 import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
@@ -14,13 +14,19 @@ export const scrapMercadoLibre = async (req: Filters): Promise<ColumnIds[]> => {
   //https://inmuebles.mercadolibre.com.ar/venta/villa-elisa-o-altos-de-san-lorenzo_ITEM*CONDITION_2230581_NoIndex_True#applied_filter_id%3Dneighborhood%26applied_filter_name%3DBarrios%26applied_filter_order%3D6%26applied_value_id%3DTVhYQWx0b3MgZGUgU2FuIExvcmVuem9UVXhCU0%26applied_value_name%3DAltos+de+San+Lorenzo%26applied_value_order%3D2%26applied_value_results%3D23%26is_custom%3Dfalse
   //https://inmuebles.mercadolibre.com.ar/venta/bsas-gba-sur/la-plata/villa-elisa-o-altos-de-san-lorenzo/_ITEM*CONDITION_2230581_NoIndex_True_TOTAL*AREA_123-321  
 
+
+// se te ocurre alguna forma de obtener la parte de subdominio que agrega meli para poder hacer la busqueda? lo unico que se me ocurrio fue hacer una solicitud a 
+// google maps y que me devuelva la provincia de el primer barrio 
+// ej meli:
+// https://inmuebles.mercadolibre.com.ar/venta/bsas-gba-sur/la-plata/villa-
+
     const browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
     let elements: ColumnIds[] = [];
 
     try {
         await page.goto(link);
-        await page.waitForSelector('.ui-search-layout.ui-search-layout--grid');
+        await page.waitForSelector('.ui-search-layout.ui-search-layout--grid',{ timeout: 10000 });
 
         const rawElements = await page.evaluate(() => {
             const products = Array.from(document.querySelectorAll('.ui-search-layout__item'));
@@ -73,19 +79,19 @@ export const scrapMercadoLibre = async (req: Filters): Promise<ColumnIds[]> => {
             });
             
             elements.push({
-                "Titulo": titulo,
-                "Precio": precio.toString(),
-                "Moneda": moneda,
-                "M2": m2Totales || 0,
-                "M2Cubiertos": m2Cubiertos,
-                "Ubicacion": ubicacion,
-                "Adicional": "",
-                "Descripcion": descripcion,
-                "Alternativo": "",
-                "URL": element.link,
-                "Operacion": String(tipos_de_transaccion),
-                "FechaDePublicacion": "",
-                "Publicador": ""
+                "titulo": titulo,
+                "precio": precio.toString(),
+                "moneda": moneda,
+                "m2": m2Totales || 0,
+                "m2Cubiertos": m2Cubiertos,
+                "ubicacion": ubicacion,
+                "adicional": "",
+                "descripcion": descripcion,
+                "alternativo": "",
+                "url": element.link,
+                "operacion": String(tipos_de_transaccion),
+                "fechaDePublicacion": "",
+                "publicador": ""
             });
 
             // residencia.setTitulo(titulo);
@@ -105,6 +111,10 @@ export const scrapMercadoLibre = async (req: Filters): Promise<ColumnIds[]> => {
             await page.goBack();
         }
     } catch (error) {
+        if (error instanceof TimeoutError){
+            console.log("Meli no encontro ningun resultado")
+            return []
+        }
         console.error('Error in scrapMercadoLibre:', error);
     } finally {
         await browser.close();

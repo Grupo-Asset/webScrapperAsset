@@ -1,56 +1,62 @@
-import { Request} from 'express';
+import { Request } from 'express';
 import { Filters } from './Filters';
 
-class Adapter {
+const argumentsAdapter = (separator: string, wordSeparator: string, args: string[]): string => {
+    console.log("args in argumentsAdapter:", args);
+    const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
+    console.log("argsPost:", formattedArgs.join(separator));
+    return formattedArgs.join(separator);
+};
 
-    private static argumentsAdapter = (separator: string,wordSeparator:string, args:string[]): string => {
-        console.log("args:",args)
-        const formattedArgs = args.map(arg => arg.replace(/\s+/g, wordSeparator));
-        console.log("argsPost:",formattedArgs.join(separator))
+const adaptArgenprop = (req: Request): Filters => {
+    const filters: Filters = { ...req.body };
+    console.log("Received filters in adaptArgenprop:", filters);
 
+    filters.tipos_de_propiedad = [argumentsAdapter("-o-", "-", filters.tipos_de_propiedad)];
+    filters.tipos_de_transaccion = [argumentsAdapter("-o-", "-", filters.tipos_de_transaccion)];
+    filters.lista_de_barrios = [argumentsAdapter("-o-", "-", filters.lista_de_barrios)];
 
-        return formattedArgs.join(separator);
-      }
-
-    public static argenprop(req: Request): Filters{
-        const filters: Filters = req.body;
-        req.body.tipos_de_propiedad   = this.argumentsAdapter("-o-","-",filters.tipos_de_propiedad)
-        req.body.tipos_de_transaccion   = this.argumentsAdapter("-o-","-",filters.tipos_de_transaccion)
-        req.body.lista_de_barrios       = this.argumentsAdapter("-o-","-",filters.lista_de_barrios)
-        if(req.body.m2_minimos && req.body.m2_maximos){
-            req.body.m2 = `${req.body.m2_minimos}-${req.body.m2_maximos}-m2`
-        }
-        if(req.body.m2_maximos){
-            req.body.m2 = `hasta-${req.body.m2_maximos}-m2`
-        }else{
-            req.body.m2 = `desde-${req.body.m2_minimos}-m2`
-        }
-        console.log("filtersPost",filters)
-        return filters
-
+    if (filters.m2_minimos && filters.m2_maximos) {
+        filters.m2 = `${filters.m2_minimos}-${filters.m2_maximos}-m2`;
+    } else if (filters.m2_maximos) {
+        filters.m2 = `hasta-${filters.m2_maximos}-m2`;
+    } else {
+        filters.m2 = `desde-${filters.m2_minimos}-m2`;
     }
-    public static zonaprop (req: Request){
-        const filters: Filters = req.body;
-        req.body.tipos_de_propiedades = this.argumentsAdapter("-o-","-",filters.tipos_de_propiedad)
-        req.body.tipos_de_transaccion = this.argumentsAdapter("-o-","-",filters.tipos_de_transaccion)
-        if(req.body.m2_minimos && req.body.m2_maximos){
-            req.body.m2 = `${req.body.m2_minimos}-${req.body.m2_maximos}-m2-cubiertos`
-        }
-        if(req.body.m2_maximos){
-            req.body.m2 = `hasta-${req.body.m2_maximos}-m2-cubiertos`
-        }else{
-            req.body.m2 = `desde-${req.body.m2_minimos}-m2-cubiertos`
-        }
-        console.log("filtersPost",filters)
-        return filters
 
+    console.log("filtersPost", filters);
+    return filters;
+};
+
+const adaptZonaprop = (req: Request): Filters => {
+    const filters: Filters = { ...req.body };
+    console.log("Received filters in adaptZonaprop:", filters);
+
+    filters.tipos_de_propiedad = [argumentsAdapter("-o-", "-", filters.tipos_de_propiedad)];
+    filters.tipos_de_transaccion = [argumentsAdapter("-o-", "-", filters.tipos_de_transaccion)];
+    filters.lista_de_barrios = [argumentsAdapter("-o-", "-", filters.lista_de_barrios)];
+
+    if (filters.m2_minimos && filters.m2_maximos) {
+        filters.m2 = `${filters.m2_minimos}-${filters.m2_maximos}-m2-cubiertos`;
+    } else if (filters.m2_maximos) {
+        filters.m2 = `hasta-${filters.m2_maximos}-m2-cubiertos`;
+    } else {
+        filters.m2 = `desde-${filters.m2_minimos}-m2-cubiertos`;
     }
-    public static meli     (req: Request){
-        const filters: Filters = req.body;
-        req.body.tipos_de_propiedades = this.argumentsAdapter("-","-",filters.tipos_de_propiedad)
-        req.body.tipos_de_transaccion = this.argumentsAdapter("-","-",filters.tipos_de_transaccion)
-        req.body.lista_de_barrios       = this.argumentsAdapter("-","-",filters.lista_de_barrios)
-        return filters
-    }
-}
-export {Adapter}
+
+    console.log("filtersPost", filters);
+    return filters;
+};
+
+const adaptMeli = (req: Request): Filters => {
+    const filters: Filters = { ...req.body };
+    console.log("Received filters in adaptMeli:", filters);
+
+    filters.tipos_de_propiedad = [argumentsAdapter("-", "-", filters.tipos_de_propiedad)];
+    filters.tipos_de_transaccion = [argumentsAdapter("-", "-", filters.tipos_de_transaccion)];
+    filters.lista_de_barrios = [argumentsAdapter("-", "-", filters.lista_de_barrios)];
+
+    return filters;
+};
+
+export { adaptArgenprop, adaptZonaprop, adaptMeli };

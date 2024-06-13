@@ -2,28 +2,28 @@ import { Request, Response } from 'express';
 import { scrapArgenprop } from '../Service/landFinder/argenprop';
 // import { scrapZonaprop } from '../Service/landFinder/zonaprop';
 // import { scrapMercadoLibre } from '../Service/Comercial/meli';
-import { Adapter } from '../Service/Adapter';
+import { adaptArgenprop } from '../Service/Adapter';
 import { Filters } from '../Service/Filters';
 import { ColumnIds } from '../Service/landFinder/ColumnsIds';
 
-export default class LandFinderController {
-    static async scrap(req: Request, res: Response): Promise<Response> {
+const LandFinderController = {
+    async scrap(req: Request, res: Response): Promise<Response> {
         try {
             // Validar la entrada
-            const { oferta } = req.body;
-            if (!oferta) {
-                return res.status(400).json({ error: 'Oferta is required' });
-            }
+            // const { oferta } = req.body;
+            // if (!oferta) {
+            //     return res.status(400).json({ error: 'Oferta is required' });
+            // } que chota es oferta??
 
             // Adaptar la solicitud para cada servicio de scraping
-            const argenpropParams: Filters = Adapter.argenprop(req);
-            // const zonapropParams: Filters = Adapter.zonaprop(req);
-            // const meliParams: ScrapeRequest = Adapter.meli(req);
+            const argenpropParams: Filters = adaptArgenprop(req);
+            // const zonapropParams: Filters = adaptZonaprop(req);
+            // const meliParams: Filters = adaptMeli(req);
 
             // Ejecutar los servicios de scraping y obtener los datos
             const argenpropData: ColumnIds[] = await scrapArgenprop(argenpropParams);
             // const zonapropData: ColumnIds[] = await scrapZonaprop(zonapropParams);
-            // const meliData: Filters = await scrapMercadoLibre(meliParams);
+            // const meliData: ColumnIds[] = await scrapMercadoLibre(meliParams);
 
             // Aquí puedes combinar, procesar o guardar los datos obtenidos si es necesario
             const combinedData = {
@@ -38,4 +38,6 @@ export default class LandFinderController {
             return res.status(500).json({ error: 'Internal Server Error' });
         }
     }
-}
+};
+
+export default LandFinderController;

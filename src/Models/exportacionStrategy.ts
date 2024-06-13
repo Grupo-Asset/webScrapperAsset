@@ -104,20 +104,21 @@ class MondayStrategy implements IExportationStrategy {
             const columns = board.columns.filter((col: Column) => col.type !== 'autonumber');
 
             const columnIds: ComercialColumnIds = {
-                Titulo: "",
-                Precio: this.getColumnId(columns, 'texto5__1'),
-                Moneda: this.getColumnId(columns, 'moneda3__1'),
-                M2: Number(this.getColumnId(columns, 'm23__1')),
-                M2Cubiertos: Number(this.getColumnId(columns, 'm2_cubiertos__1')),
-                Ubicacion: this.getColumnId(columns, 'texto0__1'),
-                Adicional: this.getColumnId(columns, 'adicional__1'),
-                Descripcion: this.getColumnId(columns, 'descripcion__1'),
-                Alternativo: this.getColumnId(columns, 'alternativo__1'),
-                URL: this.getColumnId(columns, 'texto7__1'),
-                Operacion: this.getColumnId(columns, 'texto9__1'),
-                Publicador: this.getColumnId(columns, 'texto8__1'),
-                FechaDePublicacion: ""
+                titulo: "",
+                precio: this.getColumnId(columns, 'texto5__1'),
+                moneda: this.getColumnId(columns, 'moneda3__1'),
+                m2: Number(this.getColumnId(columns, 'm23__1')),
+                m2Cubiertos: Number(this.getColumnId(columns, 'm2_cubiertos__1')),
+                ubicacion: this.getColumnId(columns, 'texto0__1'),
+                adicional: this.getColumnId(columns, 'adicional__1'),
+                descripcion: this.getColumnId(columns, 'descripcion__1'),
+                alternativo: this.getColumnId(columns, 'alternativo__1'),
+                url: this.getColumnId(columns, 'texto7__1'),
+                operacion: this.getColumnId(columns, 'texto9__1'),
+                publicador: this.getColumnId(columns, 'texto8__1'),
+                fechaDePublicacion: ""
             };
+            
 
             return { boardId: board.id, columnIds };
         } catch (error: any) {
@@ -280,8 +281,11 @@ class MondayStrategy implements IExportationStrategy {
         for (let i = 0; i < data.length; i += batchSize) {
             const batch = data.slice(i, i + batchSize);
             const batchResults = await this.sendBatchToMonday(boardId, batch, columnIds);
+        console.log("batch result: ",batchResults)
+
             results.push(...batchResults);
         }
+        console.log("result (fin add items to board): ",results)
 
         return results;
     }
@@ -324,16 +328,16 @@ class MondayStrategy implements IExportationStrategy {
 
         for (const item of batch) {
             const columnValues = {
-                [columnIds.Precio]: item.precio || "?titulo",
-                [columnIds.Moneda]: item.moneda || "?precio",
-                [String(columnIds.M2)]: item.m2 || 1,
-                [columnIds.Ubicacion]: item.ubicacion || "?ubic",
-                [columnIds.Adicional]: JSON.stringify(item.adicional) || "?adicional",
-                [columnIds.Descripcion]: item.descripcion || "?desc",
-                [columnIds.Alternativo]: JSON.stringify(item.alternativo) || "?alt",
-                [columnIds.URL]: item.url || "?url",
-                [columnIds.Operacion]: item.operacion || "?ope",
-                [columnIds.Publicador]: item.publicador || "?pub"
+                [columnIds.precio]: item.precio || "?titulo",
+                [columnIds.moneda]: item.moneda || "?precio",
+                [String(columnIds.m2)]: item.m2 || 1,
+                [columnIds.ubicacion]: item.ubicacion || "?ubic",
+                [columnIds.adicional]: JSON.stringify(item.adicional) || "?adicional",
+                [columnIds.descripcion]: item.descripcion || "?desc",
+                [columnIds.alternativo]: JSON.stringify(item.alternativo) || "?alt",
+                [columnIds.url]: item.url || "?url",
+                [columnIds.operacion]: item.operacion || "?ope",
+                [columnIds.publicador]: item.publicador || "?pub"
             };
             console.log("column values justo antes de mandarse", columnValues)
             const variables = {
@@ -452,7 +456,7 @@ class MondayStrategy implements IExportationStrategy {
         const results = [];
 
         for (const item of batch) {
-            const columnValues = {
+            const columnValues : LandFinderColumnIds= {
                 [columnIds.Descripcion]: item.descripcion || "?desc",
                 [columnIds.Alternativo]: JSON.stringify(item.alternativo) || "?alt",
                 [columnIds.Adicional]: JSON.stringify(item.adicional) || "?adicional",
@@ -462,7 +466,7 @@ class MondayStrategy implements IExportationStrategy {
                 [columnIds.Barrio]: item.barrio || "?barrio",
                 [columnIds.Titulo]: item.titulo || "?titulo",
                 [columnIds.Precio]: item.precio || "?precio",
-                [columnIds.Moneda]: item.moneda || "?moneda",
+                [columnIds.Moneda]: Number(item.moneda) || "?moneda",
                 [columnIds.M2]: item.m2 || "?m2",
                 [columnIds.PrecioPorM2]: item.precioPorM2 || "?precioPorM2",
                 [columnIds.Validacion]: item.validacion || "?validacion",

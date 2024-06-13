@@ -2,12 +2,11 @@ import { Request, Response } from 'express';
 import { scrapArgenprop } from '../Service/Residencial/argenprop';
 import { scrapZonaprop } from '../Service/Residencial/zonaprop';
 import { scrapMercadoLibre } from '../Service/Residencial/meli';
-import { Adapter } from '../Service/Adapter';
+import { adaptArgenprop, adaptZonaprop, adaptMeli } from '../Service/Adapter';
 import { Filters } from '../Service/Filters';
 
-
-export default class ResidencialController {
-    static async scrap(req: Request, res: Response): Promise<Response> {
+const ResidencialController = {
+    async scrap(req: Request, res: Response): Promise<Response> {
         try {
             // Validar la entrada
             const { oferta } = req.body;
@@ -16,9 +15,9 @@ export default class ResidencialController {
             }
 
             // Adaptar la solicitud para cada servicio de scraping
-            const argenpropParams: Filters = Adapter.argenprop(req);
-            const zonapropParams:Filters = Adapter.zonaprop(req);
-            const meliParams:Filters = Adapter.meli(req);
+            const argenpropParams: Filters = adaptArgenprop(req);
+            const zonapropParams: Filters = adaptZonaprop(req);
+            const meliParams: Filters = adaptMeli(req);
 
             // Ejecutar los servicios de scraping
             const argenpropData = await scrapArgenprop(argenpropParams);
@@ -38,4 +37,6 @@ export default class ResidencialController {
             return res.status(500).json({ error: 'Internal Server Error' });
         }
     }
-}
+};
+
+export default ResidencialController;

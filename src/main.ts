@@ -276,11 +276,14 @@ app.get('/', (_,res)=>{
           display: grid;
           grid-template-columns: 1fr 1fr;
         }
+          #scrapingMessage{
+          display:none;}
     </style>
     </head>
     <body>
     <div class="bg">
         <h2>Web Scrapper Asset</h2>
+        <div id="scrapingMessage">Scrapeando...</div>
         <section class="panel">
             <form id="scrapeForm">
                 <div class="column">
@@ -469,6 +472,10 @@ app.get('/', (_,res)=>{
                     lista_de_barrios: document.getElementById('lista_de_barrios').value.split(','),
                     tipo_de_busqueda: document.getElementById('tipo_de_busqueda').value
                 };
+                document.getElementById('scrapingForm').addEventListener('submit', function(event) {
+    scrapingMessage.style.display = 'block';
+});
+
     
                 fetch('http://localhost:4000/scrap', {
                     method: 'POST',
@@ -476,7 +483,8 @@ app.get('/', (_,res)=>{
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(formData)
-                })
+                }
+                    )
                 .then(response => response.json())
                 .then(data => {
                     console.log('Success:', data);

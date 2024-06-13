@@ -6,6 +6,7 @@ export default class ScrapperController {
 
     static async modelAsigment(req: Request, res: Response): Promise<Response> {
         try {
+            console.log(req.body)
             let resultado
             const { tipo_de_busqueda } = req.body;
             if (tipo_de_busqueda === "comercial") {

@@ -1,10 +1,10 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { TimeoutError } from 'puppeteer';
 import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
-
 export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
     const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
     const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
+    console.log(link)
 
     let browser;
     let elements: ColumnIds[] = [];
@@ -13,7 +13,7 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
         browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);  
-        await page.waitForSelector('.listing__items');
+        await page.waitForSelector('.listing__items',{ timeout: 10000 });
 
         const rawElements = await page.evaluate(() => {
             const products = Array.from(document.querySelectorAll('.listing__item'));
@@ -103,20 +103,21 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
             });
 
             elements.push({
-                "Titulo": titulo,
-                "Precio": precio.toString(),
-                "Moneda": moneda,
-                "M2": m2 || 0,
-                "M2Cubiertos": 0,
-                "Ubicacion": ubicacion,
-                "Adicional": String(adicional),
-                "Descripcion": descripcion,
-                "Alternativo": String(alternativo),
-                "URL": url,
-                "Operacion": operacion,
-                "FechaDePublicacion": fechaDePublicacion,
-                "Publicador": publicador
+                titulo: titulo,
+                precio: precio.toString(),
+                moneda: moneda,
+                m2: m2 || 0,
+                m2Cubiertos: 0,
+                ubicacion: ubicacion,
+                adicional: String(adicional),
+                descripcion: descripcion,
+                alternativo: String(alternativo),
+                url: url,
+                operacion: operacion,
+                fechaDePublicacion: fechaDePublicacion,
+                publicador: publicador
             });
+            
 
             console.log({
                 "Titulo": titulo,
@@ -135,8 +136,13 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
             await page.goBack();
         }
     } catch (error) {
+        if (error instanceof TimeoutError){
+            console.log("Argenprop no encontro ningun resultado")
+            return []
+        }
         console.error('Error in scrapArgenprop:', error);
-    } finally {
+    } 
+    finally {
         if (browser) {
             await browser.close();  
         }
