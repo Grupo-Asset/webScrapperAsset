@@ -1,4 +1,4 @@
-import puppeteer, { TimeoutError } from 'puppeteer';
+import puppeteer, { TimeoutError } from 'puppeteer-core';
 import { ColumnIds } from './ColumnsIds';
 
 export const scrapZonaprop = async (link:string): Promise<ColumnIds[]> => {

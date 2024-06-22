@@ -1,4 +1,4 @@
-import puppeteer, { Page } from 'puppeteer';
+import puppeteer, { Page } from 'puppeteer-core';
 import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
 

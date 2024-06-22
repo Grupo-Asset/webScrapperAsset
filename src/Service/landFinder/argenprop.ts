@@ -1,4 +1,4 @@
-import puppeteer, { TimeoutError } from 'puppeteer';
+import puppeteer, { TimeoutError } from 'puppeteer-core';
 import { ColumnIds } from './ColumnsIds';
 
 export const scrapArgenprop = async (link: string): Promise<ColumnIds[]> => {
