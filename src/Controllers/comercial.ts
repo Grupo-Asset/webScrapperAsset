@@ -8,7 +8,7 @@ import { Exportation, MondayStrategy } from '../Models/exportacionStrategy';
 const ComercialController = {
     async scrap(req: Request, res: Response): Promise<Response> {
         try {
-
+            console.log("ComercialController working...")
             //simulteaneo
             // const [argenpropData, zonapropData, meliData]: [ColumnIds[], ColumnIds[], ColumnIds[]] = await Promise.all([
             //     scrapArgenprop(argenpropParams),
