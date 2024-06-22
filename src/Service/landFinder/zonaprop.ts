@@ -1,11 +1,7 @@
 import puppeteer, { TimeoutError } from 'puppeteer';
 import { ColumnIds } from './ColumnsIds';
-// import { Filters } from '../Filters';
-
 
 export const scrapZonaprop = async (link:string): Promise<ColumnIds[]> => {
-    // const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
-    // const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
     console.log("zonaprop scraping...", link)
 
     let browser;

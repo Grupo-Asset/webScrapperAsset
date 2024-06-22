@@ -2,16 +2,12 @@ import { Request, Response } from 'express';
 import { scrapArgenprop } from '../Service/landFinder/argenprop';
 import { scrapZonaprop } from '../Service/landFinder/zonaprop';
 import { scrapMercadoLibre } from '../Service/landFinder/meli';
-// import { adaptArgenprop, adaptZonaprop, adaptMeli } from '../Service/Adapter';
-// import { Filters } from '../Service/Filters';
+
 import { ColumnIds } from '../Service/landFinder/ColumnsIds';
 
 const LandFinderController = {
     async scrap(req: Request, res: Response): Promise<Response> {
         try {
-            // const argenpropParams: Filters = adaptArgenprop(req);
-            // const zonapropParams: Filters = adaptZonaprop(req);
-            // const meliParams: Filters = adaptMeli(req);
 
             const argenpropData: ColumnIds[] = await scrapArgenprop(req.body.argenprop);
             const zonapropData: ColumnIds[] = await scrapZonaprop(req.body.zonaprop);

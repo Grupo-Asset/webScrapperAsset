@@ -1,9 +1,6 @@
 import puppeteer, { TimeoutError } from 'puppeteer';
-import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
-export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
-    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
-    const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
+export const scrapArgenprop = async (link: string): Promise<ColumnIds[]> => {
     console.log(link)
 
     let browser;

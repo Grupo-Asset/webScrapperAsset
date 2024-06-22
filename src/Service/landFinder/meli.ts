@@ -1,11 +1,7 @@
 import puppeteer, { TimeoutError } from 'puppeteer';
-// import { Terreno } from '../../Models/terreno';
 import { ColumnIds } from '../landFinder/ColumnsIds';
-// import { Filters } from '../Filters';
 
 export const scrapMercadoLibre = async (link: string): Promise<ColumnIds[]> => {
-    // const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
-    // const link = `https://listado.mercadolibre.com.ar/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}_ITEM*CONDITION_2230581_NoIndex_True_TOTAL*AREA_${m2}`; 
     console.log('Meli scraping...', link)
     if(!link){
         console.log("Meli no encontro ningun resultado")

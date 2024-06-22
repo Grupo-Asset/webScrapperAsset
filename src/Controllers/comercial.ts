@@ -2,23 +2,25 @@ import { Request, Response } from 'express';
 import { scrapArgenprop } from '../Service/Comercial/argenprop';
 import { scrapZonaprop } from '../Service/Comercial/zonaprop';
 import { scrapMercadoLibre } from '../Service/Comercial/meli';
-import { adaptArgenprop, adaptZonaprop, adaptMeli } from '../Service/Adapter';
-import { Filters } from '../Service/Filters';
 import { ColumnIds } from '../Service/Comercial/ColumnsIds';
 import { Exportation, MondayStrategy } from '../Models/exportacionStrategy';
 
 const ComercialController = {
     async scrap(req: Request, res: Response): Promise<Response> {
         try {
-            const argenpropParams: Filters = adaptArgenprop(req);
-            console.log("argen exitoso, req: ", req.body);
-            const zonapropParams: Filters = adaptZonaprop(req);
-            const meliParams: Filters = adaptMeli(req);
 
-            const argenpropData: ColumnIds[] = await scrapArgenprop(argenpropParams);
-            const zonapropData: ColumnIds[] = await scrapZonaprop(zonapropParams);
-            const meliData: ColumnIds[] = await scrapMercadoLibre(meliParams);
+            //simulteaneo
+            // const [argenpropData, zonapropData, meliData]: [ColumnIds[], ColumnIds[], ColumnIds[]] = await Promise.all([
+            //     scrapArgenprop(argenpropParams),
+            //     scrapZonaprop(zonapropParams),
+            //     scrapMercadoLibre(meliParams)
+            // ]);
 
+
+            const argenpropData :   ColumnIds[] = await scrapArgenprop(     req.body.argenprop);
+            const zonapropData  :   ColumnIds[] = await scrapZonaprop(      req.body.zonaprop);
+            const meliData      :   ColumnIds[] = await scrapMercadoLibre(  req.body.meli);
+            
             const combinedData = [
                 ...argenpropData,
                 ...zonapropData,
