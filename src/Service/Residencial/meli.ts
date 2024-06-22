@@ -4,7 +4,7 @@ import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
 export const scrapMercadoLibre = async (req: Filters): Promise<ColumnIds[]> => {
     // const link = 'https://listado.mercadolibre.com.ar/villa-elisa#D[A:villa%20elisa]';
-    // const browser = await puppeteer.launch({ headless: true });
+    // const const browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
     // const page = await browser.newPage();
     // const residencias: Residencia[] = [];
 

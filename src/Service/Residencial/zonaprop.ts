@@ -16,7 +16,7 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
     let browser;
     let elements: ColumnIds[] = [];
     try {
-        browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
         const page = await browser.newPage();
         await page.goto(link);
         await page.waitForSelector('.listing__items');

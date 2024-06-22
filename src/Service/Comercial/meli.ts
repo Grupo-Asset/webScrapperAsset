@@ -5,7 +5,7 @@ import { ColumnIds } from './ColumnsIds';
 
 export const scrapMercadoLibre = async (link: string): Promise<ColumnIds[]> => {
 
-    const browser = await puppeteer.launch({ headless: true });
+    const const browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
     const page = await browser.newPage();
     let elements: ColumnIds[] = [];
 

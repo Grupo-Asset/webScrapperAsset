@@ -7,7 +7,7 @@ export const scrapArgenprop = async (link: string): Promise<ColumnIds[]> => {
 
     let browser;
     try {
-        browser = await puppeteer.launch({ headless: true });
+        const browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
         const page = await browser.newPage();
         await page.goto(link);
         await page.waitForSelector('.listing__items',{ timeout: 10000 });
