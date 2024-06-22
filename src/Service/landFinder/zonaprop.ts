@@ -1,26 +1,26 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { TimeoutError } from 'puppeteer';
 import { ColumnIds } from './ColumnsIds';
-import { Filters } from '../Filters';
+// import { Filters } from '../Filters';
 
 
-export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
-    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
-
-    const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
+export const scrapZonaprop = async (link:string): Promise<ColumnIds[]> => {
+    // const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
+    // const link = `https://www.zonaprop.com.ar/${tipos_de_propiedad}-${tipos_de_transaccion}-${lista_de_barrios}-${m2}.html`;
+    console.log("zonaprop scraping...", link)
 
     let browser;
     let elements: ColumnIds[] = [];
 
     try {
-        browser = await puppeteer.launch({ headless: true });
+        browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
         await page.goto(link);
         await page.waitForSelector('.postings-container');
 
         const rawElements = await page.evaluate(() => {
-            const products = Array.from(document.querySelectorAll('.PostingCardLayout-sc-i1odl-0'));
+            const products = Array.from(document.querySelectorAll('.CardContainer-sc-1tt2vbg-5'));
             return products.map(p => ({
-                link: p.getAttribute('data-to-posting') || '',
+                link: p.getAttribute('data-to-posting') || p.querySelector(".PostingCardLayout-sc-i1odl-0")?.getAttribute("data-to-posting"),
             }));
         });
 
@@ -29,7 +29,7 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
         for (const element of rawElements) {
             if (!element.link) continue;
             await page.goto(`https://www.zonaprop.com.ar${element.link}`);
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            
 
             const titulo = await page.$eval('.title-type-sup-property', el => el.textContent?.trim() || '');
             const precioRaw = await page.$eval('.price-value span span', el => el.textContent?.trim() || '');
@@ -98,6 +98,10 @@ export const scrapZonaprop = async (req: Filters): Promise<ColumnIds[]> => {
             await page.goBack();
         }
     } catch (error) {
+        if (error instanceof TimeoutError){
+            console.log("Zonaprop no encontro ningun resultado")
+            return []
+        }
         console.error('Error in scrapZonaprop:', error);
     } finally {
         if (browser) {

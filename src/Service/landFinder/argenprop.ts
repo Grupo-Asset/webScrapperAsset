@@ -1,11 +1,11 @@
-import puppeteer from 'puppeteer';
-import { Filters } from '../Filters';
+import puppeteer, { TimeoutError } from 'puppeteer';
+// import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
 
-export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
-    const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
-
-    const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
+export const scrapArgenprop = async (link: string): Promise<ColumnIds[]> => {
+    // const { tipos_de_propiedad, tipos_de_transaccion, lista_de_barrios, m2 } = req;
+    // const link = `https://www.argenprop.com/${tipos_de_propiedad}/${tipos_de_transaccion}/${lista_de_barrios}?${m2}`;
+    console.log('Argenprop scraping... ', link)
     let elements: ColumnIds[] = [];
 
     let browser;
@@ -13,7 +13,7 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
         browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         await page.goto(link);
-        await page.waitForSelector('.listing__items');
+        await page.waitForSelector('.listing__items',{ timeout: 10000 });
 
         const rawElements = await page.evaluate(() => {
             const products = Array.from(document.querySelectorAll('.listing__item'));
@@ -38,8 +38,13 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
             const descripcion = await page.$eval('.section-description--content', el => el.textContent?.trim() || '');
             const url = `https://www.argenprop.com${element.link}`;
             const servicios = await page.$eval('#section-datos-basicos strong', el => el.textContent?.trim() || '');
+            let adicional
+            try{
+                adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
 
-            const adicional = await page.$eval('.property-features-item', el => el.textContent?.trim() || '');
+            }catch{
+                adicional= ''
+            }
             // const fechaDePublicacion = null;
             // const publicador = await page.$eval('.form-details-heading', el => el.textContent?.trim() || '');
             const alternativo = await page.$$eval('ul.property-main-features li p.strong', elements => {
@@ -74,6 +79,10 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
             await page.goBack();
         }
     } catch (error) {
+        if (error instanceof TimeoutError){
+            console.log("Argenprop no encontro ningun resultado")
+            return []
+        }
         console.error('Error in scrapArgenprop:', error);
     } finally {
         if (browser) {

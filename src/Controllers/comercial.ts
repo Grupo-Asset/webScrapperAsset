@@ -26,7 +26,7 @@ const ComercialController = {
             ]
             console.log("combined data: ",combinedData)
             if (combinedData.length === 0) {
-                return res.status(200).json({ message: 'Scraping go wrong, 0 results', data: combinedData });
+                return res.status(200).json({ message: 'El escrapeo no resulto, se encontraron 0 resultados. Deberias reducir el filtrado.', data: combinedData });
             }
 
             const exportation = new Exportation(combinedData);
