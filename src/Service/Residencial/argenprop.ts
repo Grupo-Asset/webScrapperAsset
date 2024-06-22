@@ -2,7 +2,6 @@ import puppeteer, { Page } from 'puppeteer-core';
 import { Filters } from '../Filters';
 import { ColumnIds } from './ColumnsIds';
 
-
 const getElementText = async (page: Page, selector: string): Promise<string> => {
     const element = await page.$(selector);
     return element ? await page.evaluate(el => (el as HTMLElement).textContent?.trim() || '', element) : 'Elemento no encontrado';
@@ -61,7 +60,7 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
                 if (exists) {
                     servicios = await page.$eval(selector, el => {
                         const items = Array.from(el.querySelectorAll('.property-features-item'));
-                        return items.map(item => item.textContent?.trim()).filter(Boolean).join(', ');
+                        return items.map((item: any) => item.textContent?.trim()).filter(Boolean).join(', ');
                     }).catch((error) => {
                         return undefined;
                     });
@@ -182,8 +181,6 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
             const cantPlantas = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '').catch(() => '0');
             const orientacion = await page.$eval('#section-ambientes-local .property-features-item', el => el.textContent?.trim() || '').catch(() => 'No indica');
 
-
-
             const residenciaJson = {
                 Titulo: titulo,
                 Descripcion: descripcion,
@@ -209,7 +206,6 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
             // Agregar el objeto JSON al array elements
             elements.push(residenciaJson);
             
-
             await page.goBack();
         }
     } catch (error) {
@@ -220,6 +216,6 @@ export const scrapArgenprop = async (req: Filters): Promise<ColumnIds[]> => {
         }
     }
     
-    // Imprimir resultados antes de retorn
+    // Imprimir resultados antes de retornar
     return elements;
 };
