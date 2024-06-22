@@ -6,7 +6,7 @@ export const scrapMercadoLibre = async (link: string): Promise<ColumnIds[]> => {
     if(!link){
         console.log("Meli no encontro ningun resultado")
         return []}
-    const const browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
+    const browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
     const page = await browser.newPage();
     let elements: ColumnIds[] = [];
 

@@ -7,7 +7,7 @@ export const scrapZonaprop = async (link: string): Promise<ColumnIds[]> => {
     let elements: ColumnIds[] = [];
 
     try {
-        const browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
+        browser = await puppeteer.connect({ browserWSEndpoint: process.env.BROWSER_WS_ENDPOINT });
         const page = await browser.newPage();
         await page.goto(link);
         await page.waitForSelector('.postings-container',{ timeout: 10000 });
